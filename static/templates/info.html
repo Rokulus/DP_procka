@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulation interface</title>
+
+    <link rel="stylesheet" href="/static/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/static/assets/css/info_page.css">
+</head>
+<body>
+
+<main>
+	<div class="container-fluid" id="main-container">
+            <ul class="nav nav-tabs justify-content-center mt-3 " role="tablist" id="tabs"></ul>
+
+			<div class="d-flex mt-3">
+			<div class="col-3">
+				<div class="card-deck">
+					<div class="card" style="border: none;">
+					<img class="card-img-top" src="/static/assets/img/Dymola.png" alt="Card image cap">
+					<div class="card-body">
+						<h5 class="display-5 main card-title"></h5>
+						<div class="card-text">
+							<p id="descritpiton"></p>
+							<p id="generation-time"></p>
+							<p id="start-time"></p>
+							<p id="stop-time"></p>
+							<p id="tolerance"></p>
+						</div>
+					</div>
+					</div>
+				</div>
+				<div class="card-deck">
+					<div class="card" style="border: none;">
+					<div class="card-body">
+						<h5 class="display-5 card-title">Upload FMU file</h5>
+						<div class="card-text">
+							<p>Zvoľte Vami vytvorený súbor s príponou '.fmu'</p>
+						</div>
+						<form action="/uploadfile/" enctype="multipart/form-data" method="post">
+							<input name="uploaded_file" type="file">
+							<input type="submit">
+						</form>
+						<br>
+						<p>Stiahni ZIP subor (subor sa aj uplodne na stranku)</p>
+						<form action="/returnFile/" enctype="multipart/form-data" method="post">
+							<input name="uploaded_fmu" type="file">
+							<input type="submit">
+						</form>
+						<!-- <div class="shadow bg-white rounded">
+							<input type="file" class="form-control" id="request_file">
+						</div>
+						<div class="alert alert-danger" role="alert" id="bad_file_alert" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
+						<div class="mt-3">
+							<button class="btn btn btn-success" type="button" id="request_btn" disabled>Upload</button>
+						</div> -->
+					</div>
+					</div>
+				</div>
+            </div>
+            <div class="col-3" style="margin: 0 10px 0 10px;">
+
+				<div class="d-flex">
+					<h1 class="display-5">Premenné</h1>
+					<span class="badge bg-primary rounded-pill" style="height: 20px;" id="variables-badge"></span>
+				</div>
+				<div class="card-deck" style="overflow-y: auto; max-height: 820px;">
+					<div class="card" style="border: none;">
+                <ul class="list-group list-group-flush" id="vars">
+                </ul>
+					</div>
+				</div>
+
+				<br>
+				<select name="modelMode" id="modelMode">
+					<option value="oneshot">oneshot</option>
+					<option value="continuous">continuous</option>
+				</select>
+				<br><br>
+
+				stopTime
+				<input type="text" id="stopTime" name="stopTime"><br><br>
+				stepSize
+				<input type="text" id="stepSize" name="stepSize"><br><br>
+				interval
+				<input type="text" id="interval" name="interval"><br><br>
+
+				<div class="mt-3">
+							<button class="btn btn btn-success" type="button" id="json_button">Start</button>
+				</div>
+
+				<div class="mt-3">
+					<button class="btn btn btn-success" type="button" id="download_model">Stiahnut model</button>
+				</div>
+
+				<div class="mt-3">
+					<button class="btn btn btn-success" type="button" id="delete_model">Vymazať model</button>
+				</div>
+
+            </div>
+            <div class="col-3" style="margin: 0 10px 0 10px;">
+				<div class="d-flex">
+					<h1 class="display-5">Parametre</h1>
+					<span class="badge bg-primary rounded-pill" style="height: 20px;" id="parameters-badge"></span>
+				</div>
+				<div class="card-deck" style="overflow-y: auto; max-height: 820px;">
+					<div class="card" style="border: none;">
+						<ul class="list-group list-group-flush" id="params">
+						</ul>
+					</div>
+				</div>
+            </div>
+			<div class="col-2" style="margin: 0 10px 0 10px;">
+				<div class="d-flex">
+					<h1 class="display-5">Polia</h1>
+					<span class="badge bg-primary rounded-pill" style="height: 20px;" id="arrays-badge"></span>
+				</div>
+				<div class="card-deck" style="overflow-y: auto; max-height: 820px;">
+					<div class="card" style="border: none;">
+						<ul class="list-group list-group-flush" id="arrays">
+						</ul>
+					</div>
+				</div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="/static/assets/js/jquery-3.6.0.min.js"></script>
+<script src="/static/assets/js/createjs.min.js"></script>
+<script src="/static/assets/js/plotly-latest.min.js"></script>
+<script src="/static/assets/js/popper.min.js"></script>
+<script src="/static/assets/js/bootstrap.bundle.js"></script>
+<script src="/static/assets/js/bootbox.all.min.js"></script>
+<script src="/static/assets/js/jszip.min.js"></script>
+
+<script src="/static/js/main.js"></script>
+
+<script>
+
+	let files = {{files|safe}}
+    $.each(files, function(index,value){
+        let active = ""
+        if(index == 0){
+           active = "active"
+        }
+        $("#tabs").append('<li class="nav-item shadow-sm bg-white rounded" data-toggle="tab" role="tab"><a class="nav-link '  + active + '"  href="#" data-value="'  + value + '" >' + value.substr(0, value.length - 4) + '</a></li>')
+
+
+    })
+
+	function loadInfo(fileName){
+		dataFromXml = parseModelDescription("/static/assets/models_xml/"+ fileName,false);
+
+		var htmlVars = "";
+        var htmlParams = "";
+		var htmlArrays = "";
+		var paramsCount = 0;
+		var varsCount = 0;
+		var arraysCount = 0;
+		var parameters = {};
+		var variables = {};
+		var arrays = {};
+		var datasets = {};
+
+		var formattedDate = new Date(dataFromXml.generationDateAndTime);
+		var d = formattedDate.getDate();
+		var m =  formattedDate.getMonth();
+		m += 1;  // JavaScript mesiace su 0-11
+		var y = formattedDate.getFullYear();
+		var hours = formattedDate.getHours();
+		var minutes = formattedDate.getMinutes();
+		var seconds = formattedDate.getSeconds();
+
+		$("#txtDate").val(d + "." + m + "." + y);
+
+        $.each(dataFromXml.variables,function(i,item){
+            htmlVars +=  '<li class="list-group-item"><div class="shadow-sm p-2 bg-white rounded"> <input type="checkbox" id="' + item.name + '" name=checkbox_variables /> <b>'+ item.name + '</b> - ' + item.description +'</div></li>';
+			variables[item.name] = {
+				  name: item.name,
+				  reference: item.reference,
+				  description: item.description,
+				  causality: item.causality,
+				  variability: item.variability,
+				  initial: item.initial,
+				  canHandleMultipleSetPerTimeInstant: item.canHandleMultipleSetPerTimeInstant
+			};
+			varsCount++;
+        });
+
+        $.each(dataFromXml.parameters,function(i,item){
+            htmlParams +=  '<li class="list-group-item"><div class="shadow-sm p-2 bg-white rounded"> <input type="checkbox" id="' + item.name + '" name=checkbox_parameters /> <b>'+ item.name + '</b> - ' + item.description +'</div></li>';
+			parameters[item.name] = {
+				  name: item.name,
+				  reference: item.reference,
+				  description: item.description,
+				  causality: item.causality,
+				  variability: item.variability,
+				  initial: item.initial,
+				  canHandleMultipleSetPerTimeInstant: item.canHandleMultipleSetPerTimeInstant
+			};
+			paramsCount++;
+        });
+
+		$.each(dataFromXml.arrays,function(i,item){
+			htmlArrays +=  '<li class="list-group-item"><div class="shadow-sm p-2 bg-white rounded">'+ item.cname +'</div></li>';
+			arrays[item.cname]={
+				cname: item.cname,
+				providers: item.providers
+			}
+			arraysCount++;
+		});
+
+        $('#vars').html(htmlVars);
+		$('#variables-badge').html(varsCount);
+        $('#params').html(htmlParams);
+		$('#parameters-badge').html(paramsCount);
+		$('#arrays').html(htmlArrays);
+		$('#arrays-badge').html(arraysCount);
+
+		$('.main.card-title').html(dataFromXml.modelName);
+		if(dataFromXml.description ==! null){
+			$('#descritpiton').html( "Description - " + "<b>" + dataFromXml.description + "</b>");
+		}
+
+		$('#generation-time').html("Generation date and time - " + "<b>" + d + "." + m + "." + y + " " + hours +":"+minutes+ "</b>");
+		$('#start-time').html("startTime - " + "<b>" + dataFromXml.startTime + "</b>");
+		$('#stop-time').html("stopTime - " + "<b>" + dataFromXml.stopTime + "</b>");
+		$('#tolerance').html("tolerance - " + "<b>" + dataFromXml.tolerance + "</b>");
+	}
+
+
+	function loadRequest(fileNameJSON){
+		var data = [];
+		$.getJSON(fileNameJSON, function(json) {
+			data = json;
+		});
+
+		setTimeout(function(){
+			$.ajax({
+				url: 'ajax.php',
+				type: 'POST',
+				data: data,
+				dataType: 'json',
+				async: false
+			}).done(function(data){
+				if(data.status_code === 0){
+					window.location = '?action=main';
+					//window.open('?action=main');		// otvori nove okno
+				}
+			}).fail(function(data){
+				alert("Something went wrong!");
+			});
+		},1000);
+	}
+
+
+	$(document).ready(function(){
+		$('[data-toggle="popover"]').popover();
+
+		$('#request_file').val("");
+		let fileNameXML = $(".nav-link.active").attr('data-value');
+
+		$(".nav-link").on("click",function(){
+			$('.nav-link').each(function(){
+				$(this).removeClass('active');
+			});
+			$(this).addClass("active");
+			fileNameXML = $(this).attr('data-value');
+
+			loadInfo(fileNameXML);
+		});
+
+        loadInfo(fileNameXML);
+
+
+		$('#request_file').on("change",function(){
+			if($(this)[0].files[0].type !== "application/json"){		//kontrola typu suboru
+				$('#bad_file_alert').show();							//chybny subor
+				$('#request_btn').prop('disabled', true);
+			}else{
+				$('#bad_file_alert').hide();							//spravny subor
+				$('#request_btn').prop('disabled', false);				//povolim btn
+			}
+		});
+
+		$('#request_btn').on("click",function(){
+			let fileNameJSON = $('#request_file')[0].files[0].name;		//meno JSON suboru
+			loadRequest(fileNameJSON);									//zavolanie poziadavky
+		});
+
+		$('#json_button').on("click", function(){
+			var obj = new Object();
+			obj.modelName = fileNameXML.substr(0, fileNameXML.length - 4);
+
+			obj.modelMode  = $('#modelMode').find(":selected").val();
+
+			if(!$("#stopTime").val()){
+				obj.stopTime = 10;
+			} else {
+				obj.stopTime = $("#stopTime").val();
+			}
+
+			var dataSets = [];
+			$('input[name=checkbox_variables]').each(function () {
+				if(this.checked){
+					dataSets.push(this.id);
+				}
+			});
+			obj.dataSets = dataSets;
+
+			$('input[name=checkbox_parameters]').each(function () {
+				if(this.checked){
+					dataSets.push(this.id)
+				}
+			})
+
+			if(!$("#stepSize").val()){
+				obj.stepSize = 0.1;
+			} else {
+				obj.stepSize = $("#stepSize").val();
+			}
+
+			if(!$("#interval").val()){
+				obj.interval = 30;
+			} else {
+				obj.interval = $("#interval").val();
+			}
+
+			var jsonString= JSON.stringify(obj);
+			var data = [];
+			data = $.parseJSON(jsonString);
+            let dataSetsStr = "";
+            $.each(data['dataSets'], function(index, value){
+                dataSetsStr += "&dataSets=" + value;
+            })
+            console.log(dataSetsStr);
+            console.log(data);
+            console.log(data['modelName']);
+
+            location.href = '/fmuJS/model/' + data['modelName'] + "?modelMode=" + data['modelMode'] + "&stopTime=" + data['stopTime'] + "&stepSize" + data['stepSize'] + "&interval" + data['interval'] + dataSetsStr;
+		})
+
+		$('#delete_model').on("click", function(){
+			model_name = fileNameXML.substr(0, fileNameXML.length - 4);
+			location.href = '/fmuJS/model/remove/' + model_name;
+		})
+
+		$('#download_model').on("click", function(){
+			model_name = fileNameXML.substr(0, fileNameXML.length - 4);
+			location.href = '/fmuJS/download-model/' + model_name;
+		})
+
+	});
+
+</script>
+
+
+
+</body>
+</html>
+

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  fmiVersion="2.0"
+  modelName="BouncingBall"
+  guid="{b8fc81e8-cd8d-4bc4-a0cc-d39e0adb9654}"
+  description="The &#39;classic&#39; bouncing ball model"
+  generationTool="Dymola Version 2021x (64-bit), 2020-10-09"
+  generationDateAndTime="2021-03-03T14:47:25Z"
+  variableNamingConvention="structured"
+  numberOfEventIndicators="2">
+  <ModelExchange
+    modelIdentifier="BouncingBall"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true"
+    providesDirectionalDerivative="true">
+    <SourceFiles>
+      <File
+        name="all.c"/>
+    </SourceFiles>
+  </ModelExchange>
+  <CoSimulation
+    modelIdentifier="BouncingBall"
+    canHandleVariableCommunicationStepSize="true"
+    canInterpolateInputs="true"
+    maxOutputDerivativeOrder="1"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true"
+    providesDirectionalDerivative="true">
+    <SourceFiles>
+      <File
+        name="all.c"/>
+    </SourceFiles>
+  </CoSimulation>
+  <UnitDefinitions>
+    <Unit
+      name="1"/>
+    <Unit
+      name="m">
+      <BaseUnit m="1"/>
+    </Unit>
+    <Unit
+      name="m/s">
+      <BaseUnit m="1"
+        s="-1"/>
+    </Unit>
+    <Unit
+      name="m/s2">
+      <BaseUnit m="1"
+        s="-2"/>
+    </Unit>
+  </UnitDefinitions>
+  <TypeDefinitions>
+    <SimpleType
+      name="BouncingBall.Height">
+      <Real
+        unit="m"/>
+    </SimpleType>
+    <SimpleType
+      name="BouncingBall.Velocity">
+      <Real
+        unit="m/s"/>
+    </SimpleType>
+  </TypeDefinitions>
+  <DefaultExperiment startTime="0.0"
+    stopTime="1.0"
+    tolerance="0.0001"/>
+  <ModelVariables>
+    <!-- Index for next variable = 1 -->
+    <ScalarVariable
+      name="e"
+      valueReference="16777216"
+      description="Coefficient of restitution"
+      causality="parameter"
+      variability="fixed">
+      <Real
+        unit="1"
+        start="0.8"/>
+    </ScalarVariable>
+    <!-- Index for next variable = 2 -->
+    <ScalarVariable
+      name="h0"
+      valueReference="16777217"
+      description="Initial height"
+      causality="parameter"
+      variability="fixed">
+      <Real
+        declaredType="BouncingBall.Height"
+        start="1.0"/>
+    </ScalarVariable>
+    <!-- Index for next variable = 3 -->
+    <ScalarVariable
+      name="h"
+      valueReference="33554432"
+      description="Height">
+      <Real
+        declaredType="BouncingBall.Height"/>
+    </ScalarVariable>
+    <!-- Index for next variable = 4 -->
+    <ScalarVariable
+      name="der(h)"
+      valueReference="587202560"
+      description="der(Height)">
+      <Real
+        unit="m/s"
+        derivative="3"/>
+    </ScalarVariable>
+    <!-- Index for next variable = 5 -->
+    <ScalarVariable
+      name="v"
+      valueReference="33554433"
+      description="Velocity"
+      initial="exact">
+      <Real
+        declaredType="BouncingBall.Velocity"
+        start="0.0"
+        derivative="3"
+        reinit="true"/>
+    </ScalarVariable>
+    <!-- Index for next variable = 6 -->
+    <ScalarVariable
+      name="der(v)"
+      valueReference="587202561"
+      description="der(Velocity)">
+      <Real
+        unit="m/s2"
+        derivative="5"/>
+    </ScalarVariable>
+  </ModelVariables>
+  <ModelStructure>
+    <Derivatives>
+      <Unknown index="4"
+        dependencies="5"
+        dependenciesKind="fixed"/>
+      <Unknown index="6"
+        dependencies=""
+        dependenciesKind=""/>
+    </Derivatives>
+    <InitialUnknowns>
+      <Unknown index="3"
+        dependencies="2"
+        dependenciesKind="dependent"/>
+      <Unknown index="4"
+        dependencies="5"
+        dependenciesKind="dependent"/>
+      <Unknown index="6"
+        dependencies=""
+        dependenciesKind=""/>
+    </InitialUnknowns>
+  </ModelStructure>
+</fmiModelDescription>
