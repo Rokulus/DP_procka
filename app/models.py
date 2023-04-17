@@ -35,3 +35,15 @@ class User(Base):
     )
     hashed_password: Mapped[str] = mapped_column(String(128), nullable=False)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
+
+class MatlabInstances(Base):
+    __tablename__ = "matlab_instances"
+
+    id: Mapped[str] = mapped_column(
+    UUID(as_uuid=False), primary_key=True, default=lambda _: str(uuid.uuid4())
+    )
+    matlab_instance: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    user_email: Mapped[str] = mapped_column(
+        String(254), nullable=True, default=None
+    )
+

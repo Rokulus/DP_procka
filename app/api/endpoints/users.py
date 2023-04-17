@@ -70,10 +70,19 @@ async def read_current_user(
     result = await session.execute(select(User))
     return result.scalars().all()
 
-@router.get("/test")
+@router.get("/change-email")
 async def read_current_user(
     current_user: User = Depends(deps.get_current_user),
+    session: AsyncSession = Depends(deps.get_session),
 ):
-    return "ahoj"
+    current_user.email = "ahoj@ahoj.com"
+    session.add(current_user)
+    await session.commit()
+    return current_user
+
+    current_user.hashed_password = get_password_hash(user_update_password.password)
+    session.add(current_user)
+    await session.commit()
+    return current_user
 
 

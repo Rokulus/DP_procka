@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Matlab WebSocket</title>
+    </head>
+    <body>
+        <h1>WebSocket</h1>
+        <form action="" onsubmit="sendMessage(event)">
+            <label>Access token: <input type="text" id="token" autocomplete="off" value="some-key-token"/></label>
+            <button onclick="connect(event)">Connect</button>
+            <p id="info"></p>
+            <hr>
+            <label>Name of your model: <input type="text" id="modelName" autocomplete="off"/></label>
+            <br>
+            <label>Which block you want data from ? <input type="text" id="block" autocomplete="off"/></label>
+            <br>
+            <input name="files" id="uploaded_file" type="file">
+            <button>Send</button>
+        </form>
+        <ul id='messages'>
+        </ul>
+        <script>
+        var ws = null;
+            function connect(event) {
+                var itemId = document.getElementById("itemId")
+                var token = document.getElementById("token")
+                ws = new WebSocket("ws://localhost:8000/matlab/ws?token=" + token.value);
+                ws.onmessage = function(event) {
+                    var messages = document.getElementById('messages')
+                    var message = document.createElement('li')
+                    var content = document.createTextNode(event.data)
+                    message.appendChild(content)
+                    messages.appendChild(message)
+                };
+                ws.onopen = async (event) => {
+                    var info = document.getElementById("info");
+                    info.innerHTML = "Connected!";
+                }
+                ws.onclose = async (event) => {
+                    var info = document.getElementById("info");
+                    info.innerHTML = "Disconnected! Check your access token";
+                }
+                event.preventDefault()
+            }
+            function sendMessage(event) {
+                var modelName = document.getElementById("modelName")
+                ws.send(modelName.value)
+                modelName.value = ''
+
+                var block = document.getElementById("block")
+                ws.send(block.value)
+                block.value = ''
+
+                var file = document.getElementById('uploaded_file').files[0];
+                ws.send(file)
+
+                event.preventDefault()
+            }
+        </script>
+    </body>
+</html>
