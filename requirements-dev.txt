@@ -66,4 +66,5 @@ toml==0.10.2
 tomli==2.0.1; python_version < "3.11" and python_version >= "3.7" and python_full_version < "3.11.0a7"
 jinja2
 fmpy[complete]
+wenv
 
