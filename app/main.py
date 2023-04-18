@@ -8,12 +8,40 @@ from fastapi.staticfiles import StaticFiles
 from app.api.api import api_router
 from app.core import config
 
+tags_metadata = [
+    {
+        "name": "Authorization",
+        "description": "Operations with tokens"
+    },
+    {
+        "name": "Users",
+        "description": "Operations with user"
+    },
+    {
+        "name": "FMU Javascript",
+        "description": "Operations with convertion to FMU javascript files",
+        "externalDocs": {
+            "description": "Site about models",
+            "url": "http://127.0.0.1:8000/fmuJS/model-info",
+        },
+    },
+    {
+        "name": "FMU",
+        "description": "Operations with FMU files",
+    },
+    {
+        "name": "Matlab",
+        "description": "Operations with Matlab",
+    },
+]
+
 app = FastAPI(
     title=config.settings.PROJECT_NAME,
     version=config.settings.VERSION,
     description=config.settings.DESCRIPTION,
     openapi_url="/openapi.json",
     docs_url="/",
+    openapi_tags=tags_metadata,
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="assets")

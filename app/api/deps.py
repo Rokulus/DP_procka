@@ -56,7 +56,8 @@ async def get_current_user(
     return user
 
 async def get_current_websocket(
-    websocket: WebSocket, token: Annotated[str | None, Query()]
+    websocket: WebSocket,
+    token: Annotated[str | None, Query()]
 ):
     try:
         payload = jwt.decode(

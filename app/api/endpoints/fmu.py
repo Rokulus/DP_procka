@@ -19,8 +19,10 @@ router = APIRouter()
 
 @router.post("/modelInfo")
 async def fmu_model_info(
+    current_user: User = Depends(deps.get_current_user),
     uploaded_fmu: UploadFile = File(...),
 ):
+    """Get info about FMU model"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{uploaded_fmu.filename}"
@@ -77,9 +79,11 @@ async def fmu_model_info(
 
 @router.post("/fmu/modelRun")
 async def fmu_model_run(
+    current_user: User = Depends(deps.get_current_user),
     model: Model = Depends(),
     uploaded_fmu: UploadFile = File(...)
 ):
+    """Run FMU model"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{uploaded_fmu.filename}"

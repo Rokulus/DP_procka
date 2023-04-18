@@ -15,7 +15,7 @@ alembic upgrade head
 """
 import uuid
 
-from sqlalchemy import String, Boolean
+from sqlalchemy import String, Boolean, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -46,4 +46,5 @@ class MatlabInstances(Base):
     user_email: Mapped[str] = mapped_column(
         String(254), nullable=True, default=None
     )
+    expires_at: Mapped[int] = mapped_column(Integer, nullable=True, default=None)
 

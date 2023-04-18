@@ -14,6 +14,8 @@ class RefreshTokenRequest(BaseRequest):
 class UserUpdatePasswordRequest(BaseRequest):
     password: str
 
+class UserChangeEmailRequest(BaseRequest):
+    email: EmailStr
 
 class UserCreateRequest(BaseRequest):
     email: EmailStr

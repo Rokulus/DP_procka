@@ -1,8 +1,8 @@
 [tool.poetry]
 authors = ["admin <admin@example.com>"]
-description = "FastAPI project generated using minimal-fastapi-postgres-template."
-name = "minimal_fastapi"
-version = "0.1.0-alpha"
+description = "FastAPI project with operations with Matlab and FMU files"
+name = "FastAPI_DP"
+version = "0.1.0"
 
 [tool.poetry.dependencies]
 fastapi = "^0.89.1"

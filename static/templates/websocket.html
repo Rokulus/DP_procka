@@ -7,13 +7,16 @@
         <h1>WebSocket</h1>
         <form action="" onsubmit="sendMessage(event)">
             <label>Access token: <input type="text" id="token" autocomplete="off" value="some-key-token"/></label>
+            <br><br>
+            <label>Email adress: <input type="text" id="email" autocomplete="off"/></label>
+            <br><br>
             <button onclick="connect(event)">Connect</button>
             <p id="info"></p>
             <hr>
             <label>Name of your model: <input type="text" id="modelName" autocomplete="off"/></label>
-            <br>
+            <br><br>
             <label>Which block you want data from ? <input type="text" id="block" autocomplete="off"/></label>
-            <br>
+            <br><br>
             <input name="files" id="uploaded_file" type="file">
             <button>Send</button>
         </form>
@@ -22,9 +25,9 @@
         <script>
         var ws = null;
             function connect(event) {
-                var itemId = document.getElementById("itemId")
+                var email = document.getElementById("email")
                 var token = document.getElementById("token")
-                ws = new WebSocket("ws://localhost:8000/matlab/ws?token=" + token.value);
+                ws = new WebSocket("ws://localhost:8000/matlab/ws?token=" + token.value + "&email=" + email.value);
                 ws.onmessage = function(event) {
                     var messages = document.getElementById('messages')
                     var message = document.createElement('li')

@@ -24,7 +24,7 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="static/templates")
 
-@router.get("/model-info")
+@router.get("/model-info", include_in_schema=False)
 async def show_model_info(
     request: Request,
 ):
@@ -35,7 +35,7 @@ async def show_model_info(
         "files": json.dumps(files)
     })
 
-@router.get("/model/{modelName}")
+@router.get("/model/{modelName}", include_in_schema=False)
 def show_model(
     request: Request,
     modelName: str,
