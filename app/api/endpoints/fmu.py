@@ -17,7 +17,7 @@ from pathlib import Path
 
 router = APIRouter()
 
-@router.post("/modelInfo")
+@router.post("/model-info")
 async def fmu_model_info(
     current_user: User = Depends(deps.get_current_user),
     uploaded_fmu: UploadFile = File(...),
@@ -77,7 +77,7 @@ async def fmu_model_info(
     }
     return {"model": model_info}
 
-@router.post("/fmu/modelRun")
+@router.post("/model-run")
 async def fmu_model_run(
     current_user: User = Depends(deps.get_current_user),
     model: Model = Depends(),
@@ -109,7 +109,7 @@ async def fmu_model_run(
     try:
         result = simulate_fmu(file_location, output=outputValues, start_values=startValues_dict , start_time=model.startTime, stop_time=model.stopTime, step_size=model.stepSize, solver=model.solver, relative_tolerance=model.relative_tolerance)
     except Exception as e:
-        return {"Error from simulate_fmu:": e}
+        return {"There was and error while simulating FMU. Please check if support platform of your FMU file is linux64."}
     fmu_result = np.array(result) # je to treba zmenit z numpy na str aby sa to dalo poslat
     keys = fmu_result.dtype.names
 

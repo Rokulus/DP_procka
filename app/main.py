@@ -21,7 +21,7 @@ tags_metadata = [
         "name": "FMU Javascript",
         "description": "Operations with convertion to FMU javascript files",
         "externalDocs": {
-            "description": "Site about models",
+            "description": "Site with models",
             "url": "http://127.0.0.1:8000/fmuJS/model-info",
         },
     },
@@ -32,6 +32,10 @@ tags_metadata = [
     {
         "name": "Matlab",
         "description": "Operations with Matlab",
+        "externalDocs": {
+            "description": "Websocket",
+            "url": "http://127.0.0.1:8000/matlab/websocket",
+        },
     },
 ]
 
