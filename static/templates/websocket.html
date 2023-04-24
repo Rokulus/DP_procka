@@ -22,18 +22,20 @@
         </form>
         <ul id='messages'>
         </ul>
+
+        <textarea id="data" rows="4" cols="50"></textarea>
+
         <script>
         var ws = null;
             function connect(event) {
                 var email = document.getElementById("email")
                 var token = document.getElementById("token")
-                ws = new WebSocket("ws://localhost:8000/matlab/ws?token=" + token.value + "&email=" + email.value);
+                ws = new WebSocket("ws://147.175.121.226/matlab/ws?token=" + token.value + "&email=" + email.value);
                 ws.onmessage = function(event) {
-                    var messages = document.getElementById('messages')
-                    var message = document.createElement('li')
                     var content = document.createTextNode(event.data)
-                    message.appendChild(content)
-                    messages.appendChild(message)
+                    var textarea = document.getElementById('data')
+                    textarea.append(content)
+                    textarea.append('\r\n')
                 };
                 ws.onopen = async (event) => {
                     var info = document.getElementById("info");
@@ -41,7 +43,7 @@
                 }
                 ws.onclose = async (event) => {
                     var info = document.getElementById("info");
-                    info.innerHTML = "Disconnected! Check your access token";
+                    info.innerHTML = "Disconnected!";
                 }
                 event.preventDefault()
             }

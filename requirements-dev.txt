@@ -61,10 +61,10 @@ uvloop==0.17.0 ; sys_platform != "win32" and sys_platform != "cygwin" and platfo
 virtualenv==20.17.1 ; python_version >= "3.10" and python_version < "4.0"
 watchfiles==0.18.1 ; python_version >= "3.10" and python_version < "4.0"
 websockets==10.4 ; python_version >= "3.10" and python_version < "4.0"
-matlabengine==9.13.1
 toml==0.10.2
 tomli==2.0.1; python_version < "3.11" and python_version >= "3.7" and python_full_version < "3.11.0a7"
 jinja2
 fmpy[complete]
 wenv
-
+gunicorn
+Flask-SQLAlchemy

@@ -35,6 +35,7 @@
 
         <div id="output-values">
             <h1>Update</h1>
+            <br>
         </div>
 
     </div>
@@ -64,7 +65,8 @@
         //console.log(dataFromXml['parameters'])
 
         $.each(dataSets, function(i,item){
-            $("#output-values").append(item + "<p id=variable" + i + "></p>");
+            $("#output-values").append("<h6>" + item + "</h6>")
+            $("#output-values").append("<textarea id=variable" + i + " rows='4' cols='50'></textarea></br></br>");
         })
 
         var htmlVars = "";
@@ -3317,7 +3319,8 @@
                         }
                         //TODO: tu su tie hodnoty
                         $.each(this.values, function(i,item){
-                            $("#variable" + i).html(item);
+                            $("#variable" + i).append(item);
+                            $("#variable" + i).append('\r\n');
                         })
                         return this.values[index];
                     }
@@ -3626,4 +3629,5 @@
 
 </body>
 </html>
+
 

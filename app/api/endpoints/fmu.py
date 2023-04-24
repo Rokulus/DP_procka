@@ -17,19 +17,54 @@ from pathlib import Path
 
 router = APIRouter()
 
-@router.post("/modelInfo")
-async def fmu_model_info(
+@router.post("/upload-model")
+async def upload_fmu_model(
     current_user: User = Depends(deps.get_current_user),
-    uploaded_fmu: UploadFile = File(...),
+    uploaded_model: UploadFile = File(...),
 ):
-    """Get info about FMU model"""
+    """Upload FMU model, only upload files with .fmu extension"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{uploaded_fmu.filename}"
+    file_extension = uploaded_model.filename[-4:]
+    if file_extension not in [".fmu"]:
+        raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
+
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{uploaded_model.filename}"
     FILE_EXIST = Path(file_location)
     if not FILE_EXIST.is_file():
         with open(file_location, "wb+") as file_object:
-            file_object.write(uploaded_fmu.file.read())
+            file_object.write(uploaded_model.file.read())
+        return {"FMU model was successfully uploaded ": uploaded_model.filename}
+    else:
+        raise HTTPException(status_code=400, detail="FMU model with same name already exist")
+
+@router.get("/get-uploaded-models")
+async def get_uploaded_models(
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Return array of uplaoded FMU models"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    path = f"{PROJECT_DIR}/uploaded_fmu_files"
+    files = os.listdir(path)
+    files_arr = []
+    for f in files:
+        files_arr.append(f)
+    return files_arr
+
+
+@router.get("/model-info")
+async def fmu_model_info(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Get info about FMU model, please provide name of the model without .fmu extension"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu"
 
     md = read_model_description(file_location, validate=False)
     platforms = supported_platforms(file_location)
@@ -77,20 +112,19 @@ async def fmu_model_info(
     }
     return {"model": model_info}
 
-@router.post("/fmu/modelRun")
+@router.get("/model-run")
 async def fmu_model_run(
+    model_name: str,
     current_user: User = Depends(deps.get_current_user),
     model: Model = Depends(),
-    uploaded_fmu: UploadFile = File(...)
 ):
-    """Run FMU model"""
+    """Run uploaded FMU model, please provide name of the model without .fmu extension"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{uploaded_fmu.filename}"
-    FILE_EXIST = Path(file_location)
-    if not FILE_EXIST.is_file():
-        with open(file_location, "wb+") as file_object:
-            file_object.write(uploaded_fmu.file.read())
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu"
 
     outputValues = None
     if model.outputValues != None:
@@ -109,7 +143,7 @@ async def fmu_model_run(
     try:
         result = simulate_fmu(file_location, output=outputValues, start_values=startValues_dict , start_time=model.startTime, stop_time=model.stopTime, step_size=model.stepSize, solver=model.solver, relative_tolerance=model.relative_tolerance)
     except Exception as e:
-        return {"Error from simulate_fmu:": e}
+        return {"There was and error while simulating FMU. Please check if support platform of your FMU file is linux64."}
     fmu_result = np.array(result) # je to treba zmenit z numpy na str aby sa to dalo poslat
     keys = fmu_result.dtype.names
 
@@ -121,6 +155,26 @@ async def fmu_model_run(
         final_result.append(temp_dict)
 
     return final_result
+
+@router.delete("/delete-model")
+async def delete_uploaded_model(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Delete model that is already uploaded, please provide name of the model without .fmu"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    os.remove(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu")
+
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == True):
+        raise HTTPException(status_code=400, detail="FMU model was not deleted")
+    else:
+        return {f"FMU model {model_name} was deleted successfully"}
+
+
 
 
 

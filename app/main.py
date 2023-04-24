@@ -21,8 +21,8 @@ tags_metadata = [
         "name": "FMU Javascript",
         "description": "Operations with convertion to FMU javascript files",
         "externalDocs": {
-            "description": "Site about models",
-            "url": "http://127.0.0.1:8000/fmuJS/model-info",
+            "description": "Site with models",
+            "url": "http://147.175.121.226/fmuJS/model-info",
         },
     },
     {
@@ -32,6 +32,10 @@ tags_metadata = [
     {
         "name": "Matlab",
         "description": "Operations with Matlab",
+        "externalDocs": {
+            "description": "Websocket",
+            "url": "http://147.175.121.226/matlab/websocket",
+        },
     },
 ]
 
@@ -58,4 +62,4 @@ app.add_middleware(
 )
 
 # Guards against HTTP Host Header attacks
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=config.settings.ALLOWED_HOSTS)
+#app.add_middleware(TrustedHostMiddleware, allowed_hosts=config.settings.ALLOWED_HOSTS)

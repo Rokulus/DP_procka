@@ -37,13 +37,13 @@
 						<div class="card-text">
 							<p>Zvoľte Vami vytvorený súbor s príponou '.fmu'</p>
 						</div>
-						<form action="/uploadfile/" enctype="multipart/form-data" method="post">
-							<input name="uploaded_file" type="file">
+						<form action="/fmuJS/upload-fmu" enctype="multipart/form-data" method="post">
+							<input name="uploaded_fmu" type="file">
 							<input type="submit">
 						</form>
 						<br>
 						<p>Stiahni ZIP subor (subor sa aj uplodne na stranku)</p>
-						<form action="/returnFile/" enctype="multipart/form-data" method="post">
+						<form action="/fmuJS/upload-download-fmu" enctype="multipart/form-data" method="post">
 							<input name="uploaded_fmu" type="file">
 							<input type="submit">
 						</form>
@@ -343,7 +343,7 @@
 
 		$('#delete_model').on("click", function(){
 			model_name = fileNameXML.substr(0, fileNameXML.length - 4);
-			location.href = '/fmuJS/model/remove/' + model_name;
+			location.href = '/fmuJS/model-remove/' + model_name;
 		})
 
 		$('#download_model').on("click", function(){
@@ -359,4 +359,5 @@
 
 </body>
 </html>
+
 
