@@ -1,6 +1,7 @@
 import zipfile
 
 from fastapi import APIRouter, Depends, HTTPException, File, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +38,22 @@ async def upload_fmu_model(
         return {"FMU model was successfully uploaded ": uploaded_model.filename}
     else:
         raise HTTPException(status_code=400, detail="FMU model with same name already exist")
+
+@router.get("/download-model")
+async def download_fmu_model(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Download FMU model, please state name of desired model without .fmu"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu"
+
+
+    return FileResponse(path=file_location, filename=model_name + ".fmu", media_type="multipart/form-data")
 
 @router.get("/get-uploaded-models")
 async def get_uploaded_models(
