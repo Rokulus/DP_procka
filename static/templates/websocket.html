@@ -2,28 +2,36 @@
 <html>
     <head>
         <title>Matlab WebSocket</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     </head>
     <body>
-        <h1>WebSocket</h1>
-        <form action="" onsubmit="sendMessage(event)">
-            <label>Access token: <input type="text" id="token" autocomplete="off" value="some-key-token"/></label>
-            <br><br>
-            <label>Email adress: <input type="text" id="email" autocomplete="off"/></label>
-            <br><br>
-            <button onclick="connect(event)">Connect</button>
-            <p id="info"></p>
-            <hr>
-            <label>Name of your model: <input type="text" id="modelName" autocomplete="off"/></label>
-            <br><br>
-            <label>Which block you want data from ? <input type="text" id="block" autocomplete="off"/></label>
-            <br><br>
-            <input name="files" id="uploaded_file" type="file">
-            <button>Send</button>
-        </form>
-        <ul id='messages'>
-        </ul>
+        <div class="container-fluid">
+            <h1>Matlab WebSocket</h1>
+            <form action="" onsubmit="sendMessage(event)">
+                <label>Access token: <input type="text" id="token" class="form-control" autocomplete="off"/></label>
+                <br><br>
+                <label>Email adress: <input type="text" id="email" class="form-control" autocomplete="off"/></label>
+                <br><br>
+                <button class="btn" onclick="connect(event)">Connect</button>
+                <p id="info"></p>
+                <hr style="height:2px; width:100%; border-width:0; color:red; background-color:red">
+                <p>Please provide name of the model with extension .slx or .mdl. If model does not exist you will be Disconnected.
+                    Just press connect again and write name of the model with extension .slx od .mdl again.
+                </p>
+                <label>Name of your model: <input type="text" id="modelName" class="form-control" autocomplete="off"/></label>
+                <br><br>
+                <p>If you want result data, choose block that is before To Workspace block.</p>
+                <label>Which block you want data from ? <input type="text" id="block" class="form-control" autocomplete="off"/></label>
+                <br>
+                <button class="btn" >Send</button>
+            </form>
+            <ul id='messages'>
+            </ul>
 
-        <textarea id="data" rows="4" cols="50"></textarea>
+            <textarea id="data" class="form-control" rows="4" cols="50"></textarea>
+          </div>
 
         <script>
         var ws = null;
@@ -39,11 +47,13 @@
                 };
                 ws.onopen = async (event) => {
                     var info = document.getElementById("info");
-                    info.innerHTML = "Connected!";
+                    info.innerHTML = "<br>" + "Connected!";
+                    info.classList.add("text-success")
                 }
                 ws.onclose = async (event) => {
                     var info = document.getElementById("info");
-                    info.innerHTML = "Disconnected!";
+                    info.innerHTML = "<br>" + "Disconnected!";
+                    info.classList.add("text-danger")
                 }
                 event.preventDefault()
             }
@@ -56,8 +66,8 @@
                 ws.send(block.value)
                 block.value = ''
 
-                var file = document.getElementById('uploaded_file').files[0];
-                ws.send(file)
+                // var file = document.getElementById('uploaded_file').files[0];
+                // ws.send(file)
 
                 event.preventDefault()
             }

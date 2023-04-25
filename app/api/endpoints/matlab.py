@@ -390,22 +390,19 @@ async def websocket_endpoint(
     try:
         modelName = await websocket.receive_text()
         block = await websocket.receive_text()
-        file = await websocket.receive_bytes()
 
         PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-        file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{modelName}.slx"
-        FILE_EXIST = Path(file_location)
-        if not FILE_EXIST.is_file():
-            with open(file_location, "wb+") as file_object:
-                file_object.write(file)
+        if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{modelName}") == False):
+            raise WebSocketException(status_code=400, detail="Matlab model does not exist")
 
         #eng.open_system(f'{PROJECT_DIR}/uploaded_matlab_files/{modelName}', nargout=0) # -> with GUI
         eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{modelName}', nargout=0) # -> without GUI
-        eng.set_param(f'{modelName}', 'EnablePacing', 'on', nargout=0) # -> slow simulation for testing
-        eng.set_param(f'{modelName}','SimulationCommand', 'start', nargout=0)
-        while float(eng.get_param(f'{modelName}','SimulationTime')) <= float(eng.get_param(f'{modelName}','StopTime')) and eng.get_param(f'{modelName}', 'SimulationStatus') != 'stopped':
-            eng.eval(f'get_param("{modelName}","SimulationTime")', nargout=0)
-            eng.eval(f'rto = get_param("{modelName}/{block}", "RuntimeObject")', nargout=0)
+        name = modelName[:-4]
+        #eng.set_param(f'{name}', 'EnablePacing', 'on', nargout=0) # -> slow simulation for testing
+        eng.set_param(f'{name}','SimulationCommand', 'start', nargout=0)
+        while float(eng.get_param(f'{name}','SimulationTime')) <= float(eng.get_param(f'{name}','StopTime')) and eng.get_param(f'{name}', 'SimulationStatus') != 'stopped':
+            eng.eval(f'get_param("{name}","SimulationTime")', nargout=0)
+            eng.eval(f'rto = get_param("{name}/{block}", "RuntimeObject")', nargout=0)
             eng.eval('real_time_data = rto.OutputPort(1).Data', nargout=0)
             real_time_data = eng.workspace['real_time_data']
             await push_data(websocket, real_time_data)
