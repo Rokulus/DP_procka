@@ -38,7 +38,7 @@
             function connect(event) {
                 var email = document.getElementById("email")
                 var token = document.getElementById("token")
-                ws = new WebSocket("ws://147.175.121.226/matlab/ws?token=" + token.value + "&email=" + email.value);
+                ws = new WebSocket("ws://apis.iolab.sk/matlab/ws?token=" + token.value + "&email=" + email.value);
                 ws.onmessage = function(event) {
                     var content = document.createTextNode(event.data)
                     var textarea = document.getElementById('data')

@@ -22,7 +22,7 @@ tags_metadata = [
         "description": "Operations with convertion to FMU javascript files",
         "externalDocs": {
             "description": "Site with models",
-            "url": "http://147.175.121.226/fmuJS/model-info",
+            "url": "http://apis.iolab.sk/fmuJS/model-info",
         },
     },
     {
@@ -34,7 +34,7 @@ tags_metadata = [
         "description": "Operations with Matlab",
         "externalDocs": {
             "description": "Websocket",
-            "url": "http://147.175.121.226/matlab/websocket",
+            "url": "http://apis.iolab.sk/matlab/websocket",
         },
     },
 ]
