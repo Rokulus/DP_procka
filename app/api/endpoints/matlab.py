@@ -389,7 +389,9 @@ async def websocket_endpoint(
 
     try:
         modelName = await websocket.receive_text()
-        block = await websocket.receive_text()
+        blocks = await websocket.receive_text()
+
+        blocks = blocks.split(",")
 
         PROJECT_DIR = Path(__file__).parent.parent.parent.parent
         if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{modelName}") == False):
@@ -402,10 +404,11 @@ async def websocket_endpoint(
         eng.set_param(f'{name}','SimulationCommand', 'start', nargout=0)
         while float(eng.get_param(f'{name}','SimulationTime')) <= float(eng.get_param(f'{name}','StopTime')) and eng.get_param(f'{name}', 'SimulationStatus') != 'stopped':
             eng.eval(f'get_param("{name}","SimulationTime")', nargout=0)
-            eng.eval(f'rto = get_param("{name}/{block}", "RuntimeObject")', nargout=0)
-            eng.eval('real_time_data = rto.OutputPort(1).Data', nargout=0)
-            real_time_data = eng.workspace['real_time_data']
-            await push_data(websocket, real_time_data)
+            for block in blocks:
+                eng.eval(f'rto = get_param("{name}/{block}", "RuntimeObject")', nargout=0)
+                eng.eval('real_time_data = rto.OutputPort(1).Data', nargout=0)
+                real_time_data = eng.workspace['real_time_data']
+                await push_data(websocket, block ,real_time_data)
         eng.quit()
     except WebSocketException as e:
         eng.quit()
@@ -420,6 +423,6 @@ async def websocket_endpoint(
         await session.commit()
 
 @asyncio.coroutine
-def push_data(websocket, data):
-        yield from websocket.send_text(f"{data}")
+def push_data(websocket, block, data):
+        yield from websocket.send_text(f"{block}: {data}")
         yield from asyncio.sleep(0)

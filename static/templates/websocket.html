@@ -22,7 +22,7 @@
                 </p>
                 <label>Name of your model: <input type="text" id="modelName" class="form-control" autocomplete="off"/></label>
                 <br><br>
-                <p>If you want result data, choose block that is before To Workspace block.</p>
+                <p>You must choose block that is RuntimeObject (for example Gain).</p>
                 <label>Which block you want data from ? <input type="text" id="block" class="form-control" autocomplete="off"/></label>
                 <br>
                 <button class="btn" >Send</button>
@@ -30,44 +30,53 @@
             <ul id='messages'>
             </ul>
 
-            <textarea id="data" class="form-control" rows="4" cols="50"></textarea>
+            <div id="blocks_data">
+
+            </div>
           </div>
 
         <script>
         var ws = null;
             function connect(event) {
-                var email = document.getElementById("email")
-                var token = document.getElementById("token")
+                var email = document.getElementById("email");
+                var token = document.getElementById("token");
                 ws = new WebSocket("ws://apis.iolab.sk/matlab/ws?token=" + token.value + "&email=" + email.value);
                 ws.onmessage = function(event) {
-                    var content = document.createTextNode(event.data)
-                    var textarea = document.getElementById('data')
-                    textarea.append(content)
-                    textarea.append('\r\n')
+                    var data_arr = event.data.split(":")
+                    var textarea = document.getElementById(data_arr[0]);
+                    textarea.append(data_arr[1]);
+                    textarea.append('\r\n');
                 };
                 ws.onopen = async (event) => {
                     var info = document.getElementById("info");
                     info.innerHTML = "<br>" + "Connected!";
-                    info.classList.add("text-success")
+                    info.classList.add("text-success");
                 }
                 ws.onclose = async (event) => {
                     var info = document.getElementById("info");
                     info.innerHTML = "<br>" + "Disconnected!";
-                    info.classList.add("text-danger")
+                    info.classList.add("text-danger");
                 }
                 event.preventDefault()
             }
             function sendMessage(event) {
                 var modelName = document.getElementById("modelName")
                 ws.send(modelName.value)
-                modelName.value = ''
 
-                var block = document.getElementById("block")
-                ws.send(block.value)
-                block.value = ''
-
-                // var file = document.getElementById('uploaded_file').files[0];
-                // ws.send(file)
+                var blocks = document.getElementById("blocks")
+                blocks_arr = blocks.value.split(",")
+                var div = document.getElementById("blocks_data")
+                blocks_arr.forEach(block => {
+                    var block_name = document.createElement("label");
+                    block_name.innerHTML = block;
+                    div.appendChild(block_name);
+                    var input = document.createElement("textarea");
+                    input.id = block;
+                    input.rows = "4";
+                    input.className="form-control";
+                    div.appendChild(input);
+                });
+                ws.send(blocks.value)
 
                 event.preventDefault()
             }
