@@ -10,19 +10,22 @@
         <div class="container-fluid">
             <h1>Matlab WebSocket</h1>
             <form action="" onsubmit="sendMessage(event)">
-                <label>Access token: <input type="text" id="token" class="form-control" autocomplete="off"/></label>
-                <br><br>
+                <p>Please provide your email. Email must be registered via /users/register endpoint.</p>
+                <p>If you get Disconnected after clicking on connect, check your email adress or check if any of the Matlab instances is free right now via /matlab/get-matlab-instances endpoint.</p>
                 <label>Email adress: <input type="text" id="email" class="form-control" autocomplete="off"/></label>
                 <br><br>
-                <button class="btn" onclick="connect(event)">Connect</button>
+                <button id="connect_button" class="btn" onclick="connect(event)">Connect</button>
                 <p id="info"></p>
                 <hr style="height:2px; width:100%; border-width:0; color:red; background-color:red">
                 <p>Please provide name of the model with extension .slx or .mdl. If model does not exist you will be Disconnected.
-                    Just press connect again and write name of the model with extension .slx od .mdl again.
                 </p>
                 <label>Name of your model: <input type="text" id="modelName" class="form-control" autocomplete="off"/></label>
                 <br><br>
-                <p>You must choose block that is RuntimeObject (for example Gain).</p>
+                <p>You must choose block that is a RuntimeObject (for example Gain, Sine Wave,...).</p>
+                <p>Desired blocks should be in format: Sine Wave,Gain,Gain1. There must not be any whitespaces between your desired blocks.
+                    But write name of the blocks exactly as they are in model even with whitespace, like Sine Wave (You can get names of
+                    blocks via /matlab/model-list-blocks endpoint). Otherwise you will be Disconnected.
+                </p>
                 <label>Which blocks you want data from ? <input type="text" id="blocks" class="form-control" autocomplete="off"/></label>
                 <br>
                 <button class="btn" >Send</button>
@@ -41,8 +44,7 @@
         var ws = null;
             function connect(event) {
                 var email = document.getElementById("email");
-                var token = document.getElementById("token");
-                ws = new WebSocket("ws://localhost:8000/matlab/ws?token=" + token.value + "&email=" + email.value);
+                ws = new WebSocket("ws://localhost:8000/matlab/ws?email=" + email.value);
                 ws.onmessage = function(event) {
                     var data_arr = event.data.split(":")
                     var textarea = document.getElementById(data_arr[0]);
@@ -52,12 +54,16 @@
                 ws.onopen = async (event) => {
                     var info = document.getElementById("info");
                     info.innerHTML = "<br>" + "Connected!";
-                    info.classList.add("text-success");
+                    info.className = "text-success"
+                    var connect_button = document.getElementById("connect_button");
+                    connect_button.disabled = true;
                 }
                 ws.onclose = async (event) => {
                     var info = document.getElementById("info");
                     info.innerHTML = "<br>" + "Disconnected!";
-                    info.classList.add("text-danger");
+                    info.className = "text-danger"
+                    var connect_button = document.getElementById("connect_button");
+                    connect_button.disabled = false;
                 }
                 event.preventDefault();
             }

@@ -379,7 +379,6 @@ async def get(request: Request):
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,
-    token: Annotated[str, Depends(deps.get_current_websocket)],
     email: str,
     session: AsyncSession = Depends(deps.get_session),
 ):
@@ -387,11 +386,11 @@ async def websocket_endpoint(
 
     free_instance = await get_free_matlab_instance(session=session)
     result = await session.execute(select(User).where(User.email == email))
-    if result.scalars().first() is None:
+    if result.scalars().first() is None or free_instance is None:
         await websocket.send_text("Refresh site and use your email adress")
         raise WebSocketException(
             code=status.HTTP_404_NOT_FOUND,
-            reason="Use your email-adress.",
+            reason="Bad email adress or none of the free_instane is free.",
         )
     free_instance.user_email = email
     issued_at = int(time.time()) + 2 * 60 # -> 2 minutes from now
@@ -404,7 +403,6 @@ async def websocket_endpoint(
         blocks = await websocket.receive_text()
 
         blocks = blocks.split(",")
-        #file = await websocket.receive_bytes()
 
         PROJECT_DIR = Path(__file__).parent.parent.parent.parent
         if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{modelName}") == False):
