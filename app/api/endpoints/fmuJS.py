@@ -47,7 +47,7 @@ def show_model(
     interval: float = 30
 ):
     if(os.path.isdir(f"static/assets/models/{modelName}") == False):
-        return {"Model does not exist"}
+        raise HTTPException(status_code=400, detail="Model does not exist")
     f = open(f'static/assets/models/{modelName}/{modelName}.js', 'r')
     content = f.read()
     f.close()
@@ -63,7 +63,7 @@ def show_model(
     })
 
 @router.get("/download-model/{modelName}")
-async def returnFile(modelName: str):
+async def download_model(modelName: str):
     if (os.path.isfile(f"static/assets/models/{modelName}/{modelName}.js") == False):
         return {"Model does not exist"}
     if (os.path.isfile(f"static/assets/models/{modelName}.zip") == True):
@@ -78,6 +78,10 @@ async def returnFile(modelName: str):
 async def upload_and_download_fmu(
     uploaded_fmu: UploadFile = File(...)
 ):
+    file_extension = uploaded_fmu.filename[-4:]
+    if file_extension not in [".fmu"]:
+        raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
+
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     file_name = uploaded_fmu.filename[:-4]
@@ -100,10 +104,14 @@ async def upload_and_download_fmu(
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded and downloaded or is taking longer than {timeout} seconds to convert file")
 
-@router.post("/upload-fmu")
+@router.post("/upload-model")
 async def upload_fmu(
     uploaded_fmu: UploadFile = File(...)
 ):
+    file_extension = uploaded_fmu.filename[-4:]
+    if file_extension not in [".fmu"]:
+        raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
+
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     file_name = uploaded_fmu.filename[:-4]
@@ -126,7 +134,7 @@ async def upload_fmu(
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded or is taking longer than {timeout} seconds to upload")
 
-@router.get("/model-remove/{modelName}")
+@router.delete("/model-remove/{modelName}")
 async def remove_model(
     modelName: str,
 ):

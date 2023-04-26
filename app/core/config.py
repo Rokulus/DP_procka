@@ -28,7 +28,6 @@ from typing import Literal
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, PostgresDsn, validator
 
 PROJECT_DIR = Path(__file__).parent.parent.parent
-PYPROJECT_CONTENT = toml.load(f"{PROJECT_DIR}/pyproject.toml")["tool"]["poetry"]
 
 
 class Settings(BaseSettings):
@@ -42,9 +41,9 @@ class Settings(BaseSettings):
     ALLOWED_HOSTS: list[str] = ["localhost", "127.0.0.1"]
 
     # PROJECT NAME, VERSION AND DESCRIPTION
-    PROJECT_NAME: str = PYPROJECT_CONTENT["name"]
-    VERSION: str = PYPROJECT_CONTENT["version"]
-    DESCRIPTION: str = PYPROJECT_CONTENT["description"]
+    PROJECT_NAME: str = "FastAPI_DP"
+    VERSION: str = "0.1.0"
+    DESCRIPTION: str = "FastAPI project with operations with Matlab and FMU files"
 
     # POSTGRESQL DEFAULT DATABASE
     DEFAULT_DATABASE_HOSTNAME: str
