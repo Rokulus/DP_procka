@@ -10,8 +10,6 @@
         <div class="container-fluid">
             <h1>Matlab WebSocket</h1>
             <form action="" onsubmit="sendMessage(event)">
-                <label>Access token: <input type="text" id="token" class="form-control" autocomplete="off"/></label>
-                <br><br>
                 <label>Email adress: <input type="text" id="email" class="form-control" autocomplete="off"/></label>
                 <br><br>
                 <button class="btn" onclick="connect(event)">Connect</button>
@@ -39,8 +37,7 @@
         var ws = null;
             function connect(event) {
                 var email = document.getElementById("email");
-                var token = document.getElementById("token");
-                ws = new WebSocket("ws://apis.iolab.sk/matlab/ws?token=" + token.value + "&email=" + email.value);
+                ws = new WebSocket("ws://apis.iolab.sk/matlab/ws?email=" + email.value);
                 ws.onmessage = function(event) {
                     var data_arr = event.data.split(":")
                     var textarea = document.getElementById(data_arr[0]);
@@ -50,12 +47,16 @@
                 ws.onopen = async (event) => {
                     var info = document.getElementById("info");
                     info.innerHTML = "<br>" + "Connected!";
-                    info.classList.add("text-success");
+                    info.className = "text-success"
+                    var connect_button = document.getElementById("connect_button");
+                    connect_button.disabled = true;
                 }
                 ws.onclose = async (event) => {
                     var info = document.getElementById("info");
                     info.innerHTML = "<br>" + "Disconnected!";
-                    info.classList.add("text-danger");
+                    info.className = "text-danger"
+                    var connect_button = document.getElementById("connect_button");
+                    connect_button.disabled = false;
                 }
                 event.preventDefault()
             }
