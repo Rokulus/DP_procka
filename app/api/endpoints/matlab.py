@@ -381,7 +381,7 @@ async def websocket_endpoint(
             reason="Bad email adress or none of the free_instane is free.",
         )
     free_instance.user_email = email
-    issued_at = int(time.time()) + 2 * 60 # -> 2 minutes from now
+    issued_at = int(time.time()) + 10 * 60 # -> 10 minutes from now
     free_instance.expires_at = issued_at
     await session.commit()
     eng = matlab.engine.connect_matlab(free_instance.matlab_instance)
