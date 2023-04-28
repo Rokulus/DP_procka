@@ -38,22 +38,25 @@
 							<p>Zvoľte Vami vytvorený súbor s príponou '.fmu'</p>
 						</div>
 						<form action="/fmuJS/upload-fmu" enctype="multipart/form-data" method="post">
-							<input name="uploaded_fmu" type="file">
-							<input type="submit">
+							<div class="shadow bg-white rounded">
+								<input name="uploaded_fmu" id="request_fmu" class="form-control" type="file">
+							</div>
+							<div class="alert alert-danger" role="alert" id="bad_file_alert" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
+							<div class="mt-3">
+								<button class="btn btn btn-success" type="submit" id="request_btn" disabled>Upload</button>
+							</div>
 						</form>
 						<br>
-						<p>Stiahni ZIP subor (subor sa aj uplodne na stranku)</p>
+						<p>Stiahni ZIP súbor FMU modelu v JavaScript formáte (súbor sa zároveň nahrá na stránku)</p>
 						<form action="/fmuJS/upload-download-fmu" enctype="multipart/form-data" method="post">
-							<input name="uploaded_fmu" type="file">
-							<input type="submit">
+							<div class="shadow bg-white rounded">
+								<input name="uploaded_fmu" id="request_fmu" class="form-control" type="file">
+							</div>
+							<div class="alert alert-danger" role="alert" id="bad_file_alert" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
+							<div class="mt-3">
+								<button class="btn btn btn-success" type="submit" id="request_btn" disabled>Upload</button>
+							</div>
 						</form>
-						<!-- <div class="shadow bg-white rounded">
-							<input type="file" class="form-control" id="request_file">
-						</div>
-						<div class="alert alert-danger" role="alert" id="bad_file_alert" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
-						<div class="mt-3">
-							<button class="btn btn btn-success" type="button" id="request_btn" disabled>Upload</button>
-						</div> -->
 					</div>
 					</div>
 				</div>
@@ -72,29 +75,31 @@
 				</div>
 
 				<br>
-				<select name="modelMode" id="modelMode">
+				<select name="modelMode" id="modelMode" class="form-select">
 					<option value="oneshot">oneshot</option>
 					<option value="continuous">continuous</option>
 				</select>
-				<br><br>
+				<br>
+				<div class="form-group">
+					<label>stopTime</labeL>
+					<input type="text" id="stopTime" name="stopTime" class="form-control">
+					<label>stepSize</label>
+					<input type="text" id="stepSize" name="stepSize" class="form-control">
+					<label>interval</label>
+					<input type="text" id="interval" name="interval" class="form-control">
+				</div>
 
-				stopTime
-				<input type="text" id="stopTime" name="stopTime"><br><br>
-				stepSize
-				<input type="text" id="stepSize" name="stepSize"><br><br>
-				interval
-				<input type="text" id="interval" name="interval"><br><br>
 
 				<div class="mt-3">
-							<button class="btn btn btn-success" type="button" id="json_button">Start</button>
+							<button class="btn btn btn-success" type="button" id="json_button">Spustiť model</button>
 				</div>
 
 				<div class="mt-3">
-					<button class="btn btn btn-success" type="button" id="download_model">Stiahnut model</button>
+					<button class="btn btn btn-warning" type="button" id="download_model">Stiahnuť model</button>
 				</div>
 
 				<div class="mt-3">
-					<button class="btn btn btn-success" type="button" id="delete_model">Vymazať model</button>
+					<button class="btn btn btn-danger" type="button" id="delete_model">Vymazať model</button>
 				</div>
 
             </div>
@@ -230,35 +235,10 @@
 	}
 
 
-	function loadRequest(fileNameJSON){
-		var data = [];
-		$.getJSON(fileNameJSON, function(json) {
-			data = json;
-		});
-
-		setTimeout(function(){
-			$.ajax({
-				url: 'ajax.php',
-				type: 'POST',
-				data: data,
-				dataType: 'json',
-				async: false
-			}).done(function(data){
-				if(data.status_code === 0){
-					window.location = '?action=main';
-					//window.open('?action=main');		// otvori nove okno
-				}
-			}).fail(function(data){
-				alert("Something went wrong!");
-			});
-		},1000);
-	}
-
-
 	$(document).ready(function(){
 		$('[data-toggle="popover"]').popover();
 
-		$('#request_file').val("");
+		$('#request_fmu').val("");
 		let fileNameXML = $(".nav-link.active").attr('data-value');
 
 		$(".nav-link").on("click",function(){
@@ -274,19 +254,14 @@
         loadInfo(fileNameXML);
 
 
-		$('#request_file').on("change",function(){
-			if($(this)[0].files[0].type !== "application/json"){		//kontrola typu suboru
+		$('#request_fmu').on("change",function(){
+			if($(this)[0].files[0].name.substr(-3) !== "fmu"){		//kontrola typu suboru
 				$('#bad_file_alert').show();							//chybny subor
 				$('#request_btn').prop('disabled', true);
 			}else{
 				$('#bad_file_alert').hide();							//spravny subor
 				$('#request_btn').prop('disabled', false);				//povolim btn
 			}
-		});
-
-		$('#request_btn').on("click",function(){
-			let fileNameJSON = $('#request_file')[0].files[0].name;		//meno JSON suboru
-			loadRequest(fileNameJSON);									//zavolanie poziadavky
 		});
 
 		$('#json_button').on("click", function(){
