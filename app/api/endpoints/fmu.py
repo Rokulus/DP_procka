@@ -129,7 +129,7 @@ async def fmu_model_info(
     }
     return {"model": model_info}
 
-@router.get("/model-run/{model_name}")
+@router.post("/model-run/{model_name}")
 async def fmu_model_run(
     model_name: str,
     model: RunFMUModelRequest,
