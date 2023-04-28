@@ -135,7 +135,7 @@ async def fmu_model_run(
     model: RunFMUModelRequest,
     current_user: User = Depends(deps.get_current_user),
 ):
-    """Run uploaded FMU model, please provide name of the model without .fmu extension"""
+    """Run uploaded FMU model, please provide name of the model without .fmu extension. startValues must be in format {"h": 2, "v": 3}"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
