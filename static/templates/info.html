@@ -50,11 +50,11 @@
 						<p>Stiahni ZIP súbor FMU modelu v JavaScript formáte (súbor sa zároveň nahrá na stránku)</p>
 						<form action="/fmuJS/upload-download-fmu" enctype="multipart/form-data" method="post">
 							<div class="shadow bg-white rounded">
-								<input name="uploaded_fmu" id="request_fmu" class="form-control" type="file">
+								<input name="uploaded_fmu" id="request_fmu2" class="form-control" type="file">
 							</div>
-							<div class="alert alert-danger" role="alert" id="bad_file_alert" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
+							<div class="alert alert-danger" role="alert" id="bad_file_alert2" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
 							<div class="mt-3">
-								<button class="btn btn btn-success" type="submit" id="request_btn" disabled>Upload</button>
+								<button class="btn btn btn-success" type="submit" id="request_btn2" disabled>Upload</button>
 							</div>
 						</form>
 					</div>
@@ -239,6 +239,7 @@
 		$('[data-toggle="popover"]').popover();
 
 		$('#request_fmu').val("");
+		$('#request_fmu2').val("");
 		let fileNameXML = $(".nav-link.active").attr('data-value');
 
 		$(".nav-link").on("click",function(){
@@ -261,6 +262,16 @@
 			}else{
 				$('#bad_file_alert').hide();							//spravny subor
 				$('#request_btn').prop('disabled', false);				//povolim btn
+			}
+		});
+
+		$('#request_fmu2').on("change",function(){
+			if($(this)[0].files[0].name.substr(-3) !== "fmu"){		//kontrola typu suboru
+				$('#bad_file_alert2').show();							//chybny subor
+				$('#request_btn2').prop('disabled', true);
+			}else{
+				$('#bad_file_alert2').hide();							//spravny subor
+				$('#request_btn2').prop('disabled', false);				//povolim btn
 			}
 		});
 
