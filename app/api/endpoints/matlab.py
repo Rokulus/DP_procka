@@ -181,7 +181,7 @@ async def get_block_dialog_params(
         free_instance.expires_at = None
         await session.commit()
 
-@router.get("/get-block-param-info/{model_name}/{block}/{param}")
+@router.get("/block-param-info/{model_name}/{block}/{param}")
 async def get_block_param_info(
     model_name: str,
     block: str,
