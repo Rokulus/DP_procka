@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
 from app.core.security import get_password_hash
 from app.models import User
-from app.schemas.requests import UploadFMURequest, Model
+from app.schemas.requests import Model, RunFMUModelRequest
 from app.schemas.responses import UserResponse
 
 from fmpy import *
@@ -39,7 +39,7 @@ async def upload_fmu_model(
     else:
         raise HTTPException(status_code=400, detail="FMU model with same name already exist")
 
-@router.get("/download-model")
+@router.get("/download-model/{model_name}")
 async def download_fmu_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
@@ -70,7 +70,7 @@ async def get_uploaded_models(
     return files_arr
 
 
-@router.get("/model-info")
+@router.get("/model-info/{model_name}")
 async def fmu_model_info(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
@@ -129,13 +129,13 @@ async def fmu_model_info(
     }
     return {"model": model_info}
 
-@router.get("/model-run")
+@router.post("/model-run/{model_name}")
 async def fmu_model_run(
     model_name: str,
+    model: RunFMUModelRequest,
     current_user: User = Depends(deps.get_current_user),
-    model: Model = Depends(),
 ):
-    """Run uploaded FMU model, please provide name of the model without .fmu extension"""
+    """Run uploaded FMU model, please provide name of the model without .fmu extension. startValues must be in format {"h": 2, "v": 3}"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
@@ -143,22 +143,26 @@ async def fmu_model_run(
 
     file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu"
 
-    outputValues = None
-    if model.outputValues != None:
-        outputValues = model.outputValues.split(",")
-        for i, value in enumerate(outputValues): #if somebody writes values with whitespace after ","
-            outputValues[i] = ''.join(value.split())
+    # outputValues = None
+    # if model.outputValues != None:
+    #     outputValues = model.outputValues.split(",")
+    #     for i, value in enumerate(outputValues): #if somebody writes values with whitespace after ","
+    #         outputValues[i] = ''.join(value.split())
 
-    startValues_dict = {}
-    if model.startValues != None:
-        startValues = model.startValues.split(",")
-        for i, value in enumerate(startValues): #if somebody writes values with whitespace
-            startValues[i] = ''.join(value.split())
-            values = startValues[i].split("=")
-            startValues_dict.update({values[0]: values[1]})
+    # startValues_dict = {}
+    # if model.startValues != None:
+    #     startValues = model.startValues.split(",")
+    #     for i, value in enumerate(startValues): #if somebody writes values with whitespace
+    #         startValues[i] = ''.join(value.split())
+    #         values = startValues[i].split("=")
+    #         startValues_dict.update({values[0]: values[1]})
+
+    outputValues = model.outputValues
+    if model.outputValues == "":
+        outputValues = None
 
     try:
-        result = simulate_fmu(file_location, output=outputValues, start_values=startValues_dict , start_time=model.startTime, stop_time=model.stopTime, step_size=model.stepSize, solver=model.solver, relative_tolerance=model.relative_tolerance)
+        result = simulate_fmu(file_location, output=outputValues, start_values=model.startValues , start_time=model.startTime, stop_time=model.stopTime, step_size=model.stepSize, solver=model.solver, relative_tolerance=model.relative_tolerance)
     except Exception as e:
         return {"There was and error while simulating FMU. Please check if support platform of your FMU file is linux64."}
     fmu_result = np.array(result) # je to treba zmenit z numpy na str aby sa to dalo poslat
@@ -173,7 +177,7 @@ async def fmu_model_run(
 
     return final_result
 
-@router.delete("/delete-model")
+@router.delete("/delete-model/{model_name}")
 async def delete_uploaded_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),

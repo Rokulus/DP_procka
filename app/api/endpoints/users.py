@@ -18,30 +18,6 @@ async def read_current_user(
     """Get current user"""
     return current_user
 
-@router.get("/all-users", response_model=list[UserResponse])
-async def show_all_users(
-    current_user: User = Depends(deps.get_current_user), #musi tam by toto ak to chcem mat autorizovane
-    session: AsyncSession = Depends(deps.get_session),
-):
-    """Get all users if authorized user is super user"""
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    result = await session.execute(select(User))
-    return result.scalars().all()
-
-@router.delete("/delete-user")
-async def delete_current_user(
-    user_email: str,
-    current_user: User = Depends(deps.get_current_user),
-    session: AsyncSession = Depends(deps.get_session),
-):
-    """Delete specified user if authorized user is super user"""
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
-    await session.execute(delete(User).where(User.email == user_email))
-    await session.commit()
-    return {"Success"}
-
 @router.delete("/me", status_code=204)
 async def delete_current_user(
     current_user: User = Depends(deps.get_current_user),
@@ -97,3 +73,27 @@ async def register_new_user(
     session.add(user)
     await session.commit()
     return user
+
+@router.get("/all-users", response_model=list[UserResponse])
+async def show_all_users(
+    current_user: User = Depends(deps.get_current_user), #musi tam by toto ak to chcem mat autorizovane
+    session: AsyncSession = Depends(deps.get_session),
+):
+    """Get all users if authorized user is super user"""
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    result = await session.execute(select(User))
+    return result.scalars().all()
+
+@router.delete("/delete-user")
+async def delete_current_user(
+    user_email: str,
+    current_user: User = Depends(deps.get_current_user),
+    session: AsyncSession = Depends(deps.get_session),
+):
+    """Delete specified user if authorized user is super user"""
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    await session.execute(delete(User).where(User.email == user_email))
+    await session.commit()
+    return {"Success"}

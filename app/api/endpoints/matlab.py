@@ -103,7 +103,7 @@ async def get_uploaded_models(
 
 #     return FileResponse(path=file_path, filename=model_name + ".slx", media_type="multipart/form-data")
 
-@router.get("/model-list-blocks")
+@router.get("/model-list-blocks/{model_name}")
 async def get_list_of_blocks(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
@@ -138,7 +138,7 @@ async def get_list_of_blocks(
 
     return bl
 
-@router.get("/block-DialogParams/{block}")
+@router.get("/block-DialogParams/{model_name}/{block}")
 async def get_block_dialog_params(
     model_name: str,
     block: str,
@@ -194,7 +194,7 @@ async def get_block_dialog_params(
         free_instance.expires_at = None
         await session.commit()
 
-@router.get("/get-block-param-info/{block}/{param}")
+@router.get("/get-block-param-info/{model_name}/{block}/{param}")
 async def get_block_param_info(
     model_name: str,
     block: str,
@@ -229,7 +229,7 @@ async def get_block_param_info(
         free_instance.expires_at = None
         await session.commit()
 
-@router.get("/model-run")
+@router.get("/model-run/{model_name}")
 async def run_matlab_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
@@ -306,7 +306,7 @@ async def upload_matlab_model(
     else:
         raise HTTPException(status_code=400, detail="Matlab model with same name already exist")
 
-@router.put("/set-block-param/{block}/{param}")
+@router.put("/set-block-param/{model_name}/{block}/{param}")
 async def set_block_param(
     model_name: str,
     block: str,
@@ -346,7 +346,7 @@ async def set_block_param(
     return {f"Change of {block} was success" :result}
 
 
-@router.delete("/delete-model")
+@router.delete("/delete-model/{model_name}")
 async def delete_uploaded_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
