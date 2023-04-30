@@ -324,7 +324,7 @@
             console.log(data);
             console.log(data['modelName']);
 
-            location.href = '/fmuJS/model/' + data['modelName'] + "?modelMode=" + data['modelMode'] + "&stopTime=" + data['stopTime'] + "&stepSize" + data['stepSize'] + "&interval" + data['interval'] + dataSetsStr;
+            location.href = '/fmuJS/model/' + data['modelName'] + "?modelMode=" + data['modelMode'] + "&stopTime=" + data['stopTime'] + "&stepSize=" + data['stepSize'] + "&interval=" + data['interval'] + dataSetsStr;
 		})
 
 		$('#delete_model').on("click", function(){

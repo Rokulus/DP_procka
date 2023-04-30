@@ -36,24 +36,24 @@ async def show_model_info(
         "files": json.dumps(files)
     })
 
-@router.get("/model/{modelName}", include_in_schema=False)
+@router.get("/model/{model_name}", include_in_schema=False)
 def show_model(
     request: Request,
-    modelName: str,
+    model_name: str,
     modelMode: Union[str, None] = "continuous",
     stopTime: float = 10,
     dataSets: List[str] = Query([]),
     stepSize: float = 0.1,
     interval: float = 30
 ):
-    if(os.path.isdir(f"static/assets/models/{modelName}") == False):
+    if(os.path.isdir(f"static/assets/models/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
-    f = open(f'static/assets/models/{modelName}/{modelName}.js', 'r')
+    f = open(f'static/assets/models/{model_name}/{model_name}.js', 'r')
     content = f.read()
     f.close()
     return templates.TemplateResponse("model.html", {
         "request": request,
-        "modelName": modelName,
+        "model_name": model_name,
         "modelMode": modelMode,
         "stopTime": stopTime,
         "dataSets": json.dumps(dataSets),
@@ -62,17 +62,17 @@ def show_model(
         "contentOfJS": content
     })
 
-@router.get("/download-model/{modelName}")
-async def download_model(modelName: str):
-    if (os.path.isfile(f"static/assets/models/{modelName}/{modelName}.js") == False):
+@router.get("/download-model/{model_name}")
+async def download_model(model_name: str):
+    if (os.path.isfile(f"static/assets/models/{model_name}/{model_name}.js") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
-    if (os.path.isfile(f"static/assets/models/{modelName}.zip") == True):
-        file_path = f"static/assets/models/{modelName}.zip"
+    if (os.path.isfile(f"static/assets/models/{model_name}.zip") == True):
+        file_path = f"static/assets/models/{model_name}.zip"
     else:
-        shutil.make_archive(f'static/assets/models/{modelName}', 'zip', 'static/assets/models', f'{modelName}')
-        file_path = f"static/assets/models/{modelName}.zip"
+        shutil.make_archive(f'static/assets/models/{model_name}', 'zip', 'static/assets/models', f'{model_name}')
+        file_path = f"static/assets/models/{model_name}.zip"
 
-    return FileResponse(path=file_path, filename=modelName + ".zip", media_type="multipart/form-data")
+    return FileResponse(path=file_path, filename=model_name + ".zip", media_type="multipart/form-data")
 
 @router.post("/upload-download-fmu")
 async def upload_and_download_fmu(
@@ -132,65 +132,65 @@ async def upload_fmu(
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded or is taking longer than {timeout} seconds to upload")
 
-@router.get("/model-remove/{modelName}", include_in_schema=False)
+@router.get("/model-remove/{model_name}", include_in_schema=False)
 async def remove_model(
-    modelName: str,
+    model_name: str,
 ):
 
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    if (os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{modelName}/{modelName}.js") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{model_name}/{model_name}.js") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
 
-    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.log")
-    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.log")):
+    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.log")
+    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.log")):
         raise HTTPException(status_code=400, detail="Failed deleting log file in output file of compiler")
 
-    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.zip")
-    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.zip")):
+    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.zip")
+    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.zip")):
         raise HTTPException(status_code=400, detail="Failed deleting zip file in output directory of compiler")
 
-    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{modelName}.zip")):
-        os.remove(f"{PROJECT_DIR}/static/assets/models/{modelName}.zip")
+    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{model_name}.zip")):
+        os.remove(f"{PROJECT_DIR}/static/assets/models/{model_name}.zip")
 
-    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models/{modelName}")
-    if(os.path.isdir(f"{PROJECT_DIR}/static/assets/models/{modelName}")):
+    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models/{model_name}")
+    if(os.path.isdir(f"{PROJECT_DIR}/static/assets/models/{model_name}")):
         raise HTTPException(status_code=400, detail="Failed deleting directory of model")
 
-    os.remove(f"{PROJECT_DIR}/static/assets/models_xml/{modelName}.xml")
-    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{modelName}")):
+    os.remove(f"{PROJECT_DIR}/static/assets/models_xml/{model_name}.xml")
+    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{model_name}")):
         raise HTTPException(status_code=400, detail="Failed deleting xml of model")
 
     return {"Success of deleting FMU model": True}
-    
-@router.delete("/model-remove/{modelName}")
+
+@router.delete("/model-remove/{model_name}")
 async def remove_model(
-    modelName: str,
+    model_name: str,
 ):
 
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    if (os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{modelName}/{modelName}.js") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{model_name}/{model_name}.js") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
 
-    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.log")
-    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.log")):
+    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.log")
+    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.log")):
         raise HTTPException(status_code=400, detail="Failed deleting log file in output file of compiler")
 
-    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.zip")
-    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{modelName}.zip")):
+    os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.zip")
+    if(os.path.isfile(f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{model_name}.zip")):
         raise HTTPException(status_code=400, detail="Failed deleting zip file in output directory of compiler")
 
-    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{modelName}.zip")):
-        os.remove(f"{PROJECT_DIR}/static/assets/models/{modelName}.zip")
+    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{model_name}.zip")):
+        os.remove(f"{PROJECT_DIR}/static/assets/models/{model_name}.zip")
 
-    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models/{modelName}")
-    if(os.path.isdir(f"{PROJECT_DIR}/static/assets/models/{modelName}")):
+    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models/{model_name}")
+    if(os.path.isdir(f"{PROJECT_DIR}/static/assets/models/{model_name}")):
         raise HTTPException(status_code=400, detail="Failed deleting directory of model")
 
-    os.remove(f"{PROJECT_DIR}/static/assets/models_xml/{modelName}.xml")
-    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{modelName}")):
+    os.remove(f"{PROJECT_DIR}/static/assets/models_xml/{model_name}.xml")
+    if(os.path.isfile(f"{PROJECT_DIR}/static/assets/models/{model_name}")):
         raise HTTPException(status_code=400, detail="Failed deleting xml of model")
 
-    return {"Success of deleting FMU model": True}    
+    return {"Success of deleting FMU model": True}
 
