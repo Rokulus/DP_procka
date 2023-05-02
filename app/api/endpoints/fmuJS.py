@@ -64,6 +64,7 @@ def show_model(
 
 @router.get("/download-model/{model_name}")
 async def download_model(model_name: str):
+    """Download ZIP file of Javascript and XML version of model."""
     if (os.path.isfile(f"static/assets/models/{model_name}/{model_name}.js") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
     if (os.path.isfile(f"static/assets/models/{model_name}.zip") == True):
@@ -78,6 +79,7 @@ async def download_model(model_name: str):
 async def upload_and_download_fmu(
     uploaded_fmu: UploadFile = File(...)
 ):
+    """Uploaded FMU file will be converted to Javascript and XML and returned to user for download. It will also be uplaoded on server."""
     file_extension = uploaded_fmu.filename[-4:]
     if file_extension not in [".fmu"]:
         raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
@@ -107,6 +109,7 @@ async def upload_and_download_fmu(
 async def upload_fmu(
     uploaded_fmu: UploadFile = File(...)
 ):
+    """Upload FMU file."""
     file_extension = uploaded_fmu.filename[-4:]
     if file_extension not in [".fmu"]:
         raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
