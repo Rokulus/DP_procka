@@ -33,26 +33,26 @@
 				<div class="card-deck">
 					<div class="card" style="border: none;">
 					<div class="card-body">
-						<h5 class="display-5 card-title">Nahrať FMU model</h5>
+						<h5 class="display-5 card-title">Upload FMU model</h5>
 						<div class="card-text">
-							<p>Zvoľte Vami vytvorený súbor s príponou '.fmu'</p>
+							<p>Upload file with extension '.fmu'</p>
 						</div>
 						<form action="/fmuJS/upload-fmu" enctype="multipart/form-data" method="post">
 							<div class="shadow bg-white rounded">
 								<input name="uploaded_fmu" id="request_fmu" class="form-control" type="file">
 							</div>
-							<div class="alert alert-danger" role="alert" id="bad_file_alert" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
+							<div class="alert alert-danger" role="alert" id="bad_file_alert" style="display:none;">Wrong file type, please upload file type of FMU.</div>
 							<div class="mt-3">
 								<button class="btn btn btn-success" type="submit" id="request_btn" disabled>Upload</button>
 							</div>
 						</form>
 						<br>
-						<p>Stiahni ZIP súbor FMU modelu v JavaScript formáte (súbor sa zároveň nahrá na stránku)</p>
+						<p>Download ZIP file of FMU model in Javascript format (file will also be uplaoded on site)</p>
 						<form action="/fmuJS/upload-download-fmu" enctype="multipart/form-data" method="post">
 							<div class="shadow bg-white rounded">
 								<input name="uploaded_fmu" id="request_fmu2" class="form-control" type="file">
 							</div>
-							<div class="alert alert-danger" role="alert" id="bad_file_alert2" style="display:none;">Nesprávny typ súboru, prosím vložte súbor typu FMU.</div>
+							<div class="alert alert-danger" role="alert" id="bad_file_alert2" style="display:none;">Wrong file type, please upload file type of FMU.</div>
 							<div class="mt-3">
 								<button class="btn btn btn-success" type="submit" id="request_btn2" disabled>Upload</button>
 							</div>
@@ -64,7 +64,7 @@
             <div class="col-3" style="margin: 0 10px 0 10px;">
 
 				<div class="d-flex">
-					<h1 class="display-5">Premenné</h1>
+					<h1 class="display-5">Variables</h1>
 					<span class="badge bg-primary rounded-pill" style="height: 20px;" id="variables-badge"></span>
 				</div>
 				<div class="card-deck" style="overflow-y: auto; max-height: 820px;">
@@ -91,21 +91,21 @@
 
 
 				<div class="mt-3">
-							<button class="btn btn btn-success" type="button" id="json_button">Spustiť model</button>
+							<button class="btn btn btn-success" type="button" id="json_button">Run model</button>
 				</div>
 
 				<div class="mt-3">
-					<button class="btn btn btn-warning" type="button" id="download_model">Stiahnuť model</button>
+					<button class="btn btn btn-warning" type="button" id="download_model">Download model</button>
 				</div>
 
 				<div class="mt-3">
-					<button class="btn btn btn-danger" type="button" id="delete_model">Vymazať model</button>
+					<button class="btn btn btn-danger" type="button" id="delete_model">Delete model</button>
 				</div>
 
             </div>
             <div class="col-3" style="margin: 0 10px 0 10px;">
 				<div class="d-flex">
-					<h1 class="display-5">Parametre</h1>
+					<h1 class="display-5">Parameters</h1>
 					<span class="badge bg-primary rounded-pill" style="height: 20px;" id="parameters-badge"></span>
 				</div>
 				<div class="card-deck" style="overflow-y: auto; max-height: 820px;">
@@ -117,7 +117,7 @@
             </div>
 			<div class="col-2" style="margin: 0 10px 0 10px;">
 				<div class="d-flex">
-					<h1 class="display-5">Polia</h1>
+					<h1 class="display-5">Fields</h1>
 					<span class="badge bg-primary rounded-pill" style="height: 20px;" id="arrays-badge"></span>
 				</div>
 				<div class="card-deck" style="overflow-y: auto; max-height: 820px;">
