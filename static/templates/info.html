@@ -331,7 +331,7 @@
             console.log(data);
             console.log(data['modelName']);
 
-            location.href = '/fmuJS/model/' + data['modelName'] + "?modelMode=" + data['modelMode'] + "&stopTime=" + data['stopTime'] + "&stepSize=" + data['stepSize'] + "&interval=" + data['interval'] + dataSetsStr;
+            location.href = 'https://apis.iolab.sk/fmuJS/model/' + data['modelName'] + "?modelMode=" + data['modelMode'] + "&stopTime=" + data['stopTime'] + "&stepSize=" + data['stepSize'] + "&interval=" + data['interval'] + dataSetsStr;
 		})
 
 		$('#delete_model').on("click", function(){
@@ -348,7 +348,7 @@
 			console.log(document.cookie);
 			document.cookie = "UserId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 			document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-			location.href = '/auth/login'
+			location.href = 'https://apis.iolab.sk/auth/login'
     	})
 
 	});
