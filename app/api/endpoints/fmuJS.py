@@ -134,11 +134,12 @@ async def upload_and_download_fmu_site(
     if(os.path.isfile(file_path)):
         os.system(f"unzip {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip -d {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}")
         os.system(f"cp -R {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}/{file_name}.xml {PROJECT_DIR}/static/assets/models_xml/{cookie_userId}")
+        os.system(f"cp -R {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}")
 
         os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.log")
         os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip")
 
-        return FileResponse(path=f"{PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}", filename=file_name + ".zip", media_type="multipart/form-data")
+        return FileResponse(path=f"{PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}.zip", filename=file_name + ".zip", media_type="multipart/form-data")
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded and downloaded or is taking longer than {timeout} seconds to convert file")
 
