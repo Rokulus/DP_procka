@@ -9,7 +9,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, File, UploadFile, WebSocket, WebSocketDisconnect, WebSocketException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from typing import Union, List, Annotated
 
@@ -83,7 +83,7 @@ async def get_uploaded_models(
     """Return uploaded Matlab models"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    path = f"{PROJECT_DIR}/uploaded_matlab_files"
+    path = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}"
     files = os.listdir(path)
     files_arr = []
     for f in files:
@@ -98,7 +98,7 @@ async def get_list_of_blocks(
 ):
     """Return list of blocks in model, please provide name of the model with extension .slx or .mdl based on the model you want to use."""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Matlab model does not exist")
 
     free_instance = await get_free_matlab_instance(session=session)
@@ -109,7 +109,7 @@ async def get_list_of_blocks(
     eng = matlab.engine.connect_matlab(free_instance.matlab_instance)
 
     try:
-        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{model_name}', nargout=0)
+        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         name = model_name[:-4]
         eng.eval(f'bl = getfullname(Simulink.findBlocks("{name}"))', nargout=0)
         bl = eng.workspace['bl']
@@ -134,7 +134,7 @@ async def get_block_dialog_params(
 ):
     """Return Dialog Parameter of desired block, please provide name of the model with extension .slx or .mdl based on the model you want to use."""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Matlab model does not exist")
 
     free_instance = await get_free_matlab_instance(session=session)
@@ -145,7 +145,7 @@ async def get_block_dialog_params(
     eng = matlab.engine.connect_matlab(free_instance.matlab_instance)
 
     try:
-        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{model_name}', nargout=0) # -> without GUI
+        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0) # -> without GUI
         name = model_name[:-4]
         eng.eval(f"""
                 output = '';
@@ -191,7 +191,7 @@ async def get_block_param_info(
 ):
     """Return parameter of desired block, please provide name of the model with extension .slx or .mdl based on the model you want to use."""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Matlab model does not exist")
 
     free_instance = await get_free_matlab_instance(session=session)
@@ -203,7 +203,7 @@ async def get_block_param_info(
 
     parameter = ""
     try:
-        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{model_name}', nargout=0)
+        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         name = model_name[:-4]
         eng.eval(f'param = get_param("{name}/{block}","{param}")', nargout=0)
         parameter = eng.workspace['param']
@@ -224,7 +224,7 @@ async def run_matlab_model(
 ):
     """Run Matlab model, please provide name of the model with extension .slx or .mdl based on the model you want to run."""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Matlab model does not exist")
 
     free_instance = await get_free_matlab_instance(session=session)
@@ -237,7 +237,7 @@ async def run_matlab_model(
 
     try:
         #eng.open_system(f'{PROJECT_DIR}/uploaded_matlab_files/{uploaded_model.filename}', nargout=0) # -> with GUI
-        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{model_name}', nargout=0) # -> without GUI
+        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0) # -> without GUI
         name = model_name[:-4]
         eng.set_param(f'{name}','SimulationCommand', 'start', nargout=0)
         while float(eng.get_param(f'{name}','SimulationTime')) <= float(eng.get_param(f'{name}','StopTime')) and eng.get_param(f'{name}', 'SimulationStatus') != 'stopped':
@@ -285,7 +285,7 @@ async def upload_matlab_model(
     if file_extension not in [".slx", ".mdl"]:
         raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .slx or .mdl")
 
-    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{uploaded_model.filename}"
+    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{uploaded_model.filename}"
     FILE_EXIST = Path(file_location)
     if not FILE_EXIST.is_file():
         with open(file_location, "wb+") as file_object:
@@ -305,7 +305,7 @@ async def set_block_param(
 ):
     """Set block parameter, please provide name of the model with extension .slx or .mdl based on the model you want to use."""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Matlab model does not exist")
 
     free_instance = await get_free_matlab_instance(session=session)
@@ -316,7 +316,7 @@ async def set_block_param(
     eng = matlab.engine.connect_matlab(free_instance.matlab_instance)
 
     try:
-        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{model_name}', nargout=0)
+        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         name = model_name[:-4]
         eng.eval(f"set_param('{name}/{block}', '{param}', '{new_value}')", nargout=0)
         eng.eval(f"result_of_change = get_param('{name}/{block}','{param}')", nargout=0)
@@ -342,25 +342,32 @@ async def delete_uploaded_model(
     """Delete model that is already uploaded, please provide name of the model with .slx or .mdl"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}") == False):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Matlab model does not exist")
 
-    os.remove(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}")
+    os.remove(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}")
 
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}.original") == True):
-        os.remove(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}.original")
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}.original") == True):
+        os.remove(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}.original")
 
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}.autosave") == True):
-        os.remove(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}.autosave")
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}.autosave") == True):
+        os.remove(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}.autosave")
 
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{model_name}") == True):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == True):
         raise HTTPException(status_code=400, detail="Matlab model was not deleted")
     else:
         return {f"Matlab model {model_name} was deleted successfully"}
 
 
 @router.get("/websocket", include_in_schema=False)
-async def get(request: Request):
+async def get(
+    request: Request
+):
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if cookie_authorization == None:
+        return RedirectResponse("https://apis.iolab.sk/auth/login")
+    result = await deps.check_access_token(token=cookie_authorization)
+
     return templates.TemplateResponse("websocket.html", {
         "request": request,
     })
@@ -374,8 +381,8 @@ async def websocket_endpoint(
     await websocket.accept()
 
     free_instance = await get_free_matlab_instance(session=session)
-    result = await session.execute(select(User).where(User.email == email))
-    if result.scalars().first() is None or free_instance is None:
+    user = await session.execute(select(User).where(User.email == email))
+    if user.scalars().first() is None or free_instance is None:
         raise WebSocketException(
             code=status.HTTP_404_NOT_FOUND,
             reason="Bad email adress or none of the free_instane is free.",
@@ -393,11 +400,11 @@ async def websocket_endpoint(
         blocks = blocks.split(",")
 
         PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-        if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{modelName}") == False):
+        if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}") == False):
             raise WebSocketException(status_code=400, detail="Matlab model does not exist")
 
-        #eng.open_system(f'{PROJECT_DIR}/uploaded_matlab_files/{modelName}', nargout=0) # -> with GUI
-        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{modelName}', nargout=0) # -> without GUI
+        #eng.open_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0) # -> with GUI
+        eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0) # -> without GUI
         name = modelName[:-4]
         #eng.set_param(f'{name}', 'EnablePacing', 'on', nargout=0) # -> slow simulation for testing
         eng.set_param(f'{name}','SimulationCommand', 'start', nargout=0)

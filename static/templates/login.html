@@ -33,6 +33,8 @@
         {% if msg %}
         <br>
         <button type="button" id="site" class="btn btn-success">Site with models</button>
+        <br>
+        <button type="button" id="matlab-websocket" class="btn btn-success">Matlab WebSocket</button>
         {% endif %}
 
         </div>
@@ -40,6 +42,10 @@
         <script>
             $('#site').on("click", function(){
                 location.href = 'https://apis.iolab.sk/fmuJS/model-info/'
+            })
+
+            $('#matlab-websocket').on("click", function(){
+                location.href = 'https://apis.iolab.sk/matlab/websocket'
             })
         </script>
 
