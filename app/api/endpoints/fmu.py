@@ -30,14 +30,12 @@ async def upload_fmu_model(
     if file_extension not in [".fmu"]:
         raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
 
-    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{uploaded_model.filename}"
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{uploaded_model.filename}"
     FILE_EXIST = Path(file_location)
-    if not FILE_EXIST.is_file():
-        with open(file_location, "wb+") as file_object:
-            file_object.write(uploaded_model.file.read())
-        return {"FMU model was successfully uploaded ": uploaded_model.filename}
-    else:
-        raise HTTPException(status_code=400, detail="FMU model with same name already exist")
+
+    with open(file_location, "wb+") as file_object:
+        file_object.write(uploaded_model.file.read())
+    return {"FMU model was successfully uploaded ": uploaded_model.filename}
 
 @router.get("/download-model/{model_name}")
 async def download_fmu_model(
@@ -47,11 +45,10 @@ async def download_fmu_model(
     """Download FMU model, please state name of desired model without .fmu"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
 
-    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu"
-
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu"
 
     return FileResponse(path=file_location, filename=model_name + ".fmu", media_type="multipart/form-data")
 
@@ -62,7 +59,7 @@ async def get_uploaded_models(
     """Return array of uploaded FMU models"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    path = f"{PROJECT_DIR}/uploaded_fmu_files"
+    path = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}"
     files = os.listdir(path)
     files_arr = []
     for f in files:
@@ -78,10 +75,10 @@ async def fmu_model_info(
     """Get info about FMU model, please provide name of the model without .fmu extension"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
 
-    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu"
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu"
 
     md = read_model_description(file_location, validate=False)
     platforms = supported_platforms(file_location)
@@ -138,10 +135,10 @@ async def fmu_model_run(
     """Run uploaded FMU model, please provide name of the model without .fmu extension. startValues must be in format {"h": 2, "v": 3}"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
 
-    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu"
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu"
 
     outputValues = model.outputValues
     if model.outputValues == "":
@@ -171,12 +168,12 @@ async def delete_uploaded_model(
     """Delete model that is already uploaded, please provide name of the model without .fmu"""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
-    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == False):
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
 
-    os.remove(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu")
+    os.remove(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu")
 
-    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{model_name}.fmu") == True):
+    if (os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu") == True):
         raise HTTPException(status_code=400, detail="FMU model was not deleted")
     else:
         return {f"FMU model {model_name} was deleted successfully"}

@@ -70,6 +70,15 @@ def generate_access_token_response(subject: str | int):
         refresh_token_issued_at=refresh_issued_at,
     )
 
+def generate_access_token(subject: str | int):
+    """Generate tokens and return OnlyAccessTokenResponse"""
+    access_token, expires_at, issued_at = create_jwt_token(
+        subject, ACCESS_TOKEN_EXPIRE_SECS, refresh=False
+    )
+    refresh_token, refresh_expires_at, refresh_issued_at = create_jwt_token(
+        subject, REFRESH_TOKEN_EXPIRE_SECS, refresh=True
+    )
+    return access_token
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verifies plain and hashed password matches

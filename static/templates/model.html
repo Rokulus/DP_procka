@@ -60,7 +60,7 @@
 	let interval = "{{interval}}"
 
     $(document).ready(function(){
-        dataFromXml = parseModelDescription("/static/assets/models/" + id + "/" + id + ".xml")
+        dataFromXml = parseModelDescription("/static/assets/models/{{userId|safe}}/" + id + "/" + id + ".xml")
 
         //console.log(dataFromXml['parameters'])
 
