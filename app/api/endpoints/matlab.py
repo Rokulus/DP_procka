@@ -421,21 +421,9 @@ async def websocket_endpoint(
                 eng.eval('real_time_data = rto.OutputPort(1).Data', nargout=0)
                 real_time_data = eng.workspace['real_time_data']
                 await push_data(websocket, block ,real_time_data)
-        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
-        eng.quit()
     except WebSocketException as e:
-        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
-        eng.quit()
-        free_instance.user_email = None
-        free_instance.expires_at = None
-        await session.commit()
         return {'Exception websocket ERROR: ':  e}
     except matlab.engine.MatlabExecutionError as e:
-        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
-        eng.quit()
-        free_instance.user_email = None
-        free_instance.expires_at = None
-        await session.commit()
         return {e.args[0]}
     finally:
         eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
