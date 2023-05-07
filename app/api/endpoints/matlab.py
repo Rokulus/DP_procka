@@ -167,6 +167,7 @@ async def get_block_dialog_params(
             key = parts[0].strip()
             value = parts[1].strip()
             output_dict[key] = value
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         eng.quit()
         return output_dict
 
@@ -207,6 +208,7 @@ async def get_block_param_info(
         name = model_name[:-4]
         eng.eval(f'param = get_param("{name}/{block}","{param}")', nargout=0)
         parameter = eng.workspace['param']
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         eng.quit()
         return {param :str(parameter)}
     except matlab.engine.MatlabExecutionError as e:
@@ -248,6 +250,7 @@ async def run_matlab_model(
         eng.eval('t = out.tout;',nargout=0)
         x = eng.workspace['x']
         t = eng.workspace['t']
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         eng.quit()
 
         data = np.array(x)
@@ -321,6 +324,7 @@ async def set_block_param(
         eng.eval(f"set_param('{name}/{block}', '{param}', '{new_value}')", nargout=0)
         eng.eval(f"result_of_change = get_param('{name}/{block}','{param}')", nargout=0)
         result = eng.workspace['result_of_change']
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         eng.quit()
     except matlab.engine.MatlabExecutionError as e:
         return {e.args[0]}
@@ -415,14 +419,18 @@ async def websocket_endpoint(
                 eng.eval('real_time_data = rto.OutputPort(1).Data', nargout=0)
                 real_time_data = eng.workspace['real_time_data']
                 await push_data(websocket, block ,real_time_data)
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
         eng.quit()
     except WebSocketException as e:
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
         eng.quit()
         return {'Exception websocket ERROR: ':  e}
     except matlab.engine.MatlabExecutionError as e:
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
         eng.quit()
         return {e.args[0]}
     finally:
+        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
         eng.quit()
         free_instance.user_email = None
         free_instance.expires_at = None
