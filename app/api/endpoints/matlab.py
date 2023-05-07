@@ -324,6 +324,7 @@ async def set_block_param(
         eng.eval(f"set_param('{name}/{block}', '{param}', '{new_value}')", nargout=0)
         eng.eval(f"result_of_change = get_param('{name}/{block}','{param}')", nargout=0)
         result = eng.workspace['result_of_change']
+        eng.save_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}', nargout=0)
         eng.quit()
     except matlab.engine.MatlabExecutionError as e:
