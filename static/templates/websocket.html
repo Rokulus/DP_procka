@@ -42,7 +42,7 @@
         var ws = null;
             function connect(event) {
                 var email = document.getElementById("email");
-                ws = new WebSocket("ws://apis.iolab.sk/matlab/ws?email=" + email.value);
+                ws = new WebSocket("wss://apis.iolab.sk/matlab/ws?email=" + email.value);
                 ws.onmessage = function(event) {
                     var data_arr = event.data.split(":")
                     var textarea = document.getElementById(data_arr[0]);
