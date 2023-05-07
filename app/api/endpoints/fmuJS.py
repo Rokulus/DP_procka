@@ -102,6 +102,46 @@ async def download_model_site(
 
     return FileResponse(path=file_path, filename=model_name + ".zip", media_type="multipart/form-data")
 
+@router.post("/upload-download-fmu-site")
+async def upload_and_download_fmu_site(
+    request: Request,
+    uploaded_fmu: UploadFile = File(...)
+):
+    """Uploaded FMU file will be converted to Javascript and XML and returned to user for download. It will also be uplaoded on server."""
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if cookie_authorization == None:
+        return RedirectResponse("https://apis.iolab.sk/auth/login")
+    result = await deps.check_access_token(token=cookie_authorization)
+
+    cookie_userId: str = request.cookies.get("UserId")
+
+    file_extension = uploaded_fmu.filename[-4:]
+    if file_extension not in [".fmu"]:
+        raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    file_name = uploaded_fmu.filename[:-4]
+    file_location = f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/input/{uploaded_fmu.filename}"
+    with open(file_location, "wb+") as file_object:
+        file_object.write(uploaded_fmu.file.read())
+    file_path = f"{PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip"
+    timeout = 10   # [seconds]
+    timeout_start = time.time()
+    while time.time() < timeout_start + timeout:
+        if os.path.isfile(file_path):
+            break
+        time.sleep(1)
+    if(os.path.isfile(file_path)):
+        os.system(f"unzip {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip -d {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}")
+        os.system(f"cp -R {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}/{file_name}.xml {PROJECT_DIR}/static/assets/models_xml/{cookie_userId}")
+
+        os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.log")
+        os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip")
+
+        return FileResponse(path=file_path, filename=file_name + ".zip", media_type="multipart/form-data")
+    else:
+        raise HTTPException(status_code=400, detail=f"File was not uploaded and downloaded or is taking longer than {timeout} seconds to convert file")
+
 
 # Only Endpoints
 
