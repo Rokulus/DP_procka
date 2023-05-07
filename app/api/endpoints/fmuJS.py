@@ -38,7 +38,7 @@ async def show_model_info(
 
     cookie_userId: str = request.cookies.get("UserId")
 
-    path = "static/assets/models_xml" + cookie_userId
+    path = "static/assets/models_xml/" + cookie_userId
     files = os.listdir(path)
     return templates.TemplateResponse("info.html", {
         "request": request,
