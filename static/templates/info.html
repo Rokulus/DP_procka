@@ -209,6 +209,7 @@
 
 		$.each(dataFromXml.arrays,function(i,item){
 			htmlArrays +=  '<li class="list-group-item"><div class="shadow-sm p-2 bg-white rounded">'+ item.cname +'</div></li>';
+			//htmlArrays +=  '<li class="list-group-item"><div class="shadow-sm p-2 bg-white rounded"> <input type="checkbox" id="' + item.cname +'" name=checkbox_fields /> </div></li>';
 			arrays[item.cname]={
 				cname: item.cname,
 				providers: item.providers
@@ -300,6 +301,12 @@
 				}
 			})
 
+			// $('input[name=checkbox_fields]').each(function () {
+			// 	if(this.checked){
+			// 		dataSets.push(this.id)
+			// 	}
+			// })
+
 			if(!$("#stepSize").val()){
 				obj.stepSize = 0.1;
 			} else {
@@ -323,7 +330,7 @@
             console.log(data);
             console.log(data['modelName']);
 
-            location.href = '/fmuJS/model/' + data['modelName'] + "?modelMode=" + data['modelMode'] + "&stopTime=" + data['stopTime'] + "&stepSize" + data['stepSize'] + "&interval" + data['interval'] + dataSetsStr;
+            location.href = '/fmuJS/model/' + data['modelName'] + "?modelMode=" + data['modelMode'] + "&stopTime=" + data['stopTime'] + "&stepSize=" + data['stepSize'] + "&interval=" + data['interval'] + dataSetsStr;
 		})
 
 		$('#delete_model').on("click", function(){

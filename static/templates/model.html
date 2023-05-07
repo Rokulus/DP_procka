@@ -51,7 +51,7 @@
 
 <script>
     var dataFromXml = [];
-	let id = "{{modelName}}"
+	let id = "{{model_name}}"
 	let dataSets = {{dataSets|safe}}
 
 	let stopTime = "{{stopTime}}"
@@ -2775,7 +2775,7 @@
 
         models["model-id"]=function anonymous(){
 			{{contentOfJS|safe}}
-            return {{modelName}};
+            return {{model_name}};
 		}
 
         function createModelRuntime(Model, config, functions) {
