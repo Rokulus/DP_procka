@@ -134,12 +134,14 @@ async def upload_and_download_fmu_site(
     if(os.path.isfile(file_path)):
         os.system(f"unzip {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip -d {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}")
         os.system(f"cp -R {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}/{file_name}.xml {PROJECT_DIR}/static/assets/models_xml/{cookie_userId}")
-        os.system(f"cp -R {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip {PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}")
 
         os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.log")
         os.system(f"rm -f {PROJECT_DIR}/Bodylight.js-FMU-Compiler/output/{file_name}.zip")
 
-        return FileResponse(path=f"{PROJECT_DIR}/static/assets/models/{cookie_userId}/{file_name}.zip", filename=file_name + ".zip", media_type="multipart/form-data")
+        shutil.make_archive(f'static/assets/models/{cookie_userId}/{file_name}', 'zip', f'static/assets/models/{cookie_userId}', f'{file_name}')
+        file_path_download = file_path = f"static/assets/models/{cookie_userId}/{file_name}.zip"
+
+        return FileResponse(path=file_path_download, filename=file_name + ".zip", media_type="multipart/form-data")
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded and downloaded or is taking longer than {timeout} seconds to convert file")
 
@@ -157,7 +159,7 @@ async def download_model(
     if (os.path.isfile(f"static/assets/models/{current_user.id}/{model_name}.zip") == True):
         file_path = f"static/assets/models/{current_user.id}/{model_name}.zip"
     else:
-        shutil.make_archive(f'static/assets/models/{current_user.id}/{model_name}', 'zip', 'static/assets/models', f'{model_name}')
+        shutil.make_archive(f'static/assets/models/{current_user.id}/{model_name}', 'zip', f'static/assets/models/{current_user.id}', f'{model_name}')
         file_path = f"static/assets/models/{current_user.id}/{model_name}.zip"
 
     return FileResponse(path=file_path, filename=model_name + ".zip", media_type="multipart/form-data")
