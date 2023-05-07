@@ -386,8 +386,9 @@ async def websocket_endpoint(
     await websocket.accept()
 
     free_instance = await get_free_matlab_instance(session=session)
-    user = await session.execute(select(User).where(User.email == email))
-    if user.scalars().first() is None or free_instance is None:
+    result = await session.execute(select(User).where(User.email == email))
+    user = result.scalars().first()
+    if user is None or free_instance is None:
         raise WebSocketException(
             code=status.HTTP_404_NOT_FOUND,
             reason="Bad email adress or none of the free_instane is free.",
