@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, select
@@ -29,6 +30,15 @@ async def delete_current_user(
     """Delete current user"""
     await session.execute(delete(User).where(User.id == current_user.id))
     await session.commit()
+
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models/{current_user.id}")
+    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models_xml/{current_user.id}")
+
+    shutil.rmtree(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}")
+    shutil.rmtree(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}")
+
 
 @router.post("/change-email")
 async def update_current_user_email(
@@ -113,6 +123,20 @@ async def delete_current_user(
     """Delete specified user if authorized user is super user"""
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    result = await session.execute(select(User).where(User.email == user_email))
+    user = result.scalars().first()
+    delete_user_id = user.id
+
     await session.execute(delete(User).where(User.email == user_email))
     await session.commit()
+
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models/{delete_user_id }")
+    shutil.rmtree(f"{PROJECT_DIR}/static/assets/models_xml/{delete_user_id }")
+
+    shutil.rmtree(f"{PROJECT_DIR}/uploaded_matlab_files/{delete_user_id }")
+    shutil.rmtree(f"{PROJECT_DIR}/uploaded_fmu_files/{delete_user_id }")
+
     return {"Success"}
