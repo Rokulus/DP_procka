@@ -6,6 +6,7 @@ By defualt `main` create a superuser if not exists
 """
 
 import asyncio
+import os
 
 from sqlalchemy import select
 
@@ -13,6 +14,7 @@ from app.core import config, security
 from app.core.session import async_session
 from app.models import User
 
+from pathlib import Path
 
 async def main() -> None:
     print("Start initial data")
@@ -32,6 +34,21 @@ async def main() -> None:
             )
             session.add(new_superuser)
             await session.commit()
+
+            PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+            name_of_user_directory = user.id
+            path = f"{PROJECT_DIR}/uploaded_fmu_files/{name_of_user_directory}"
+            os.mkdir(path)
+
+            path = f"{PROJECT_DIR}/uploaded_matlab_files/{name_of_user_directory}"
+            os.mkdir(path)
+
+            path = f"{PROJECT_DIR}/static/assets/models/{name_of_user_directory}"
+            os.mkdir(path)
+
+            path = f"{PROJECT_DIR}/static/assets/models_xml/{name_of_user_directory}"
+            os.mkdir(path)
+
             print("Superuser was created")
         else:
             print("Superuser already exists in database")
