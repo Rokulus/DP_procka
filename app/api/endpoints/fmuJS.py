@@ -97,7 +97,7 @@ async def download_model_site(
     if (os.path.isfile(f"static/assets/models/{cookie_userId}/{model_name}.zip") == True):
         file_path = f"static/assets/models/{cookie_userId}/{model_name}.zip"
     else:
-        shutil.make_archive(f'static/assets/models/{cookie_userId}/{model_name}', 'zip', 'static/assets/models', f'{model_name}')
+        shutil.make_archive(f'static/assets/models/{cookie_userId}/{model_name}', 'zip', f'static/assets/models/{cookie_userId}', f'{model_name}')
         file_path = f"static/assets/models/{cookie_userId}/{model_name}.zip"
 
     return FileResponse(path=file_path, filename=model_name + ".zip", media_type="multipart/form-data")
