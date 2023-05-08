@@ -363,6 +363,20 @@ async def delete_uploaded_model(
     else:
         return {f"Matlab model {model_name} was deleted successfully"}
 
+@router.get("/download-model/{model_name}")
+async def download_matlab_model(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Download Matlab model, please provide name of the model with .slx or .mdl"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}"
+
+    return FileResponse(path=file_location, filename=model_name, media_type="multipart/form-data")
 
 @router.get("/websocket", include_in_schema=False)
 async def get(
