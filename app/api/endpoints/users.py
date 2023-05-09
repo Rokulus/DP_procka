@@ -114,8 +114,8 @@ async def show_all_users(
     result = await session.execute(select(User))
     return result.scalars().all()
 
-@router.delete("/delete-user")
-async def delete_current_user(
+@router.delete("/{user_email}")
+async def delete_specific_user(
     user_email: str,
     current_user: User = Depends(deps.get_current_user),
     session: AsyncSession = Depends(deps.get_session),

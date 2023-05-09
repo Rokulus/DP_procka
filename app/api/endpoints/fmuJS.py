@@ -304,7 +304,7 @@ async def upload_fmu(
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded or is taking longer than {timeout} seconds to upload")
 
-@router.delete("/model-remove/{model_name}")
+@router.delete("/{model_name}")
 async def remove_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user)

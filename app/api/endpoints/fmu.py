@@ -160,7 +160,7 @@ async def fmu_model_run(
 
     return final_result
 
-@router.delete("/delete-model/{model_name}")
+@router.delete("/{model_name}")
 async def delete_uploaded_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),

@@ -76,6 +76,24 @@ async def get_matlab_instances(
     result = await session.execute(select(MatlabInstances))
     return result.scalars().all()
 
+@router.post("/upload-model")
+async def upload_matlab_model(
+    current_user: User = Depends(deps.get_current_user),
+    uploaded_model: UploadFile = File(...),
+):
+    """Upload Matlab model, please only upload files with .slx or .mdl extension"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    file_extension = uploaded_model.filename[-4:]
+    if file_extension not in [".slx", ".mdl"]:
+        raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .slx or .mdl")
+
+    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{uploaded_model.filename}"
+    with open(file_location, "wb+") as file_object:
+        file_object.write(uploaded_model.file.read())
+    return {"Matlab model was successfully uploaded ": uploaded_model.filename}
+
+
 @router.get("/get-uploaded-models")
 async def get_uploaded_models(
     current_user: User = Depends(deps.get_current_user),
@@ -218,7 +236,22 @@ async def get_block_param_info(
         free_instance.expires_at = None
         await session.commit()
 
-@router.get("/model-run/{model_name}")
+@router.get("/download-model/{model_name}")
+async def download_matlab_model(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Download Matlab model, please provide name of the model with .slx or .mdl"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}"
+
+    return FileResponse(path=file_location, filename=model_name, media_type="multipart/form-data")
+
+@router.post("/model-run/{model_name}")
 async def run_matlab_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
@@ -276,42 +309,6 @@ async def run_matlab_model(
 
     return final_result
 
-@router.get("/download-model/{model_name}")
-async def download_matlab_model(
-    model_name: str,
-    current_user: User = Depends(deps.get_current_user),
-):
-    """Download Matlab model, please provide name of the model with .slx or .mdl"""
-    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-
-    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
-        raise HTTPException(status_code=400, detail="Model does not exist")
-
-    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}"
-
-    return FileResponse(path=file_location, filename=model_name, media_type="multipart/form-data")
-
-@router.post("/upload-model")
-async def upload_matlab_model(
-    current_user: User = Depends(deps.get_current_user),
-    uploaded_model: UploadFile = File(...),
-):
-    """Upload Matlab model, please only upload files with .slx or .mdl extension"""
-    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-
-    file_extension = uploaded_model.filename[-4:]
-    if file_extension not in [".slx", ".mdl"]:
-        raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .slx or .mdl")
-
-    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{uploaded_model.filename}"
-    FILE_EXIST = Path(file_location)
-    if not FILE_EXIST.is_file():
-        with open(file_location, "wb+") as file_object:
-            file_object.write(uploaded_model.file.read())
-        return {"Matlab model was successfully uploaded ": uploaded_model.filename}
-    else:
-        raise HTTPException(status_code=400, detail="Matlab model with same name already exist")
-
 @router.put("/set-block-param/{model_name}/{block}/{param}")
 async def set_block_param(
     model_name: str,
@@ -354,7 +351,7 @@ async def set_block_param(
     return {f"Change of {block} was success" :result}
 
 
-@router.delete("/delete-model/{model_name}")
+@router.delete("/{model_name}")
 async def delete_uploaded_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
