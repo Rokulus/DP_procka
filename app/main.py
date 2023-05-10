@@ -37,6 +37,10 @@ tags_metadata = [
             "url": "https://apis.iolab.sk/matlab/websocket/site",
         },
     },
+        {
+        "name": "Logs",
+        "description": "Get access and error logs. Only super users can access these endpoints.",
+    },
 ]
 
 app = FastAPI(
