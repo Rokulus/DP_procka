@@ -114,7 +114,7 @@ async def show_all_users(
     result = await session.execute(select(User))
     return result.scalars().all()
 
-@router.put("/make-super-user/{user_email}")
+@router.put("/{user_email}")
 async def make_super_user(
     user_email: str,
     current_user: User = Depends(deps.get_current_user),
