@@ -125,7 +125,7 @@ async def make_super_user(
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     result = await session.execute(select(User).where(User.email == user_email))
-    if result.scalars().first() is not None:
+    if result.scalars().first() is None:
         raise HTTPException(status_code=400, detail="User does not exist")
 
     await session.execute(update(User).where(User.email == user_email).values(is_superuser=True))
