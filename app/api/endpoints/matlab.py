@@ -76,12 +76,12 @@ async def get_matlab_instances(
     result = await session.execute(select(MatlabInstances))
     return result.scalars().all()
 
-@router.post("/upload-model")
+@router.post("/")
 async def upload_matlab_model(
     current_user: User = Depends(deps.get_current_user),
     uploaded_model: UploadFile = File(...),
 ):
-    """Upload Matlab model, please only upload files with .slx or .mdl extension"""
+    """Upload Matlab model, please only upload files with .slx or .mdl extension. If you upload file with same name, the old one will be updated. """
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     file_extension = uploaded_model.filename[-4:]
@@ -236,7 +236,7 @@ async def get_block_param_info(
         free_instance.expires_at = None
         await session.commit()
 
-@router.get("/download-model/{model_name}")
+@router.get("/{model_name}")
 async def download_matlab_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),
@@ -405,7 +405,7 @@ async def websocket_endpoint(
             reason="Bad email adress or none of the free_instane is free.",
         )
     free_instance.user_email = email
-    issued_at = int(time.time()) + 10 * 60 # -> 10 minutes from now
+    issued_at = int(time.time()) + 5 * 60 # -> 5 minutes from now
     free_instance.expires_at = issued_at
     await session.commit()
     eng = matlab.engine.connect_matlab(free_instance.matlab_instance)

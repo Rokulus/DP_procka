@@ -18,12 +18,12 @@ from pathlib import Path
 
 router = APIRouter()
 
-@router.post("/upload-model")
+@router.post("/")
 async def upload_fmu_model(
     current_user: User = Depends(deps.get_current_user),
     uploaded_model: UploadFile = File(...),
 ):
-    """Upload FMU model, only upload files with .fmu extension"""
+    """Upload FMU model, only upload files with .fmu extension. If you upload file with same name, the old one will be updated."""
     PROJECT_DIR = Path(__file__).parent.parent.parent.parent
 
     file_extension = uploaded_model.filename[-4:]
@@ -37,7 +37,7 @@ async def upload_fmu_model(
         file_object.write(uploaded_model.file.read())
     return {"FMU model was successfully uploaded ": uploaded_model.filename}
 
-@router.get("/download-model/{model_name}")
+@router.get("/{model_name}")
 async def download_fmu_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user),

@@ -217,7 +217,7 @@ async def remove_model(
 
 # Only Endpoints
 
-@router.get("/download-model/{model_name}")
+@router.get("/{model_name}")
 async def download_model(
     model_name: str,
     current_user: User = Depends(deps.get_current_user)
@@ -238,7 +238,7 @@ async def upload_and_download_fmu(
     uploaded_fmu: UploadFile = File(...),
     current_user: User = Depends(deps.get_current_user)
 ):
-    """Uploaded FMU file will be converted to Javascript and XML and returned to user for download. It will also be uplaoded on server."""
+    """Uploaded FMU file will be converted to Javascript and XML and returned to user for download. It will also be uplaoded on server. If you upload file with same name, the old one will be updated."""
     file_extension = uploaded_fmu.filename[-4:]
     if file_extension not in [".fmu"]:
         raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
@@ -269,12 +269,12 @@ async def upload_and_download_fmu(
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded and downloaded or is taking longer than {timeout} seconds to convert file")
 
-@router.post("/upload-fmu")
+@router.post("/")
 async def upload_fmu(
     uploaded_fmu: UploadFile = File(...),
     current_user: User = Depends(deps.get_current_user)
 ):
-    """Upload FMU file."""
+    """Upload FMU file. If you upload file with same name, the old one will be updated."""
     file_extension = uploaded_fmu.filename[-4:]
     if file_extension not in [".fmu"]:
         raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")

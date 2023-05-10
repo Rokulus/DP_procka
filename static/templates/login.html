@@ -37,6 +37,12 @@
             <br>
             <button type="button" id="matlab-websocket" class="btn btn-success">Matlab WebSocket</button>
         </div>
+
+        <div>
+            <br>
+            <button type="button" id="logout" class="btn btn-danger">Logout</button>
+        </div>
+
         {% endif %}
 
         </div>
@@ -49,6 +55,13 @@
             $('#matlab-websocket').on("click", function(){
                 location.href = 'https://apis.iolab.sk/matlab/websocket'
             })
+
+            $('#logout').on("click", function(){
+                console.log(document.cookie);
+                document.cookie = "UserId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                location.href = 'https://apis.iolab.sk/auth/login'
+    	    })
         </script>
 
     </body>
