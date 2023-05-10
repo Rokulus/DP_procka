@@ -2,7 +2,7 @@ import os
 import shutil
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api import deps
@@ -105,7 +105,7 @@ async def register_new_user(
 
 @router.get("/all-users", response_model=list[UserResponse])
 async def show_all_users(
-    current_user: User = Depends(deps.get_current_user), #musi tam by toto ak to chcem mat autorizovane
+    current_user: User = Depends(deps.get_current_user),
     session: AsyncSession = Depends(deps.get_session),
 ):
     """Get all users if user is super ser"""
@@ -113,6 +113,19 @@ async def show_all_users(
         raise HTTPException(status_code=403, detail="Not enough permissions")
     result = await session.execute(select(User))
     return result.scalars().all()
+
+@router.put("/make-super-user/{user_email}")
+async def make_super_user(
+    user_email: str,
+    current_user: User = Depends(deps.get_current_user),
+    session: AsyncSession = Depends(deps.get_session),
+):
+    """Make basic user to super user. Only super user can call this endpoint."""
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    await session.execute(update(User).where(User.email == user_email).values(is_superuser=True))
+    await session.commit()
 
 @router.delete("/{user_email}")
 async def delete_specific_user(
