@@ -269,7 +269,7 @@ async def upload_and_download_fmu(
     else:
         raise HTTPException(status_code=400, detail=f"File was not uploaded and downloaded or is taking longer than {timeout} seconds to convert file")
 
-@router.post("/")
+@router.post("")
 async def upload_fmu(
     uploaded_fmu: UploadFile = File(...),
     current_user: User = Depends(deps.get_current_user)

@@ -34,7 +34,7 @@ tags_metadata = [
         "description": "Operations with Matlab",
         "externalDocs": {
             "description": "Websocket",
-            "url": "https://apis.iolab.sk/matlab/websocket",
+            "url": "https://apis.iolab.sk/matlab/websocket/site",
         },
     },
 ]

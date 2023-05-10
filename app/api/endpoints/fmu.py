@@ -18,7 +18,7 @@ from pathlib import Path
 
 router = APIRouter()
 
-@router.post("/")
+@router.post("")
 async def upload_fmu_model(
     current_user: User = Depends(deps.get_current_user),
     uploaded_model: UploadFile = File(...),

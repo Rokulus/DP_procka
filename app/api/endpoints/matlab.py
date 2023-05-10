@@ -76,7 +76,7 @@ async def get_matlab_instances(
     result = await session.execute(select(MatlabInstances))
     return result.scalars().all()
 
-@router.post("/")
+@router.post("")
 async def upload_matlab_model(
     current_user: User = Depends(deps.get_current_user),
     uploaded_model: UploadFile = File(...),
@@ -309,7 +309,7 @@ async def run_matlab_model(
 
     return final_result
 
-@router.put("/set-block-param/{model_name}/{block}/{param}")
+@router.put("/{model_name}/{block}/{param}")
 async def set_block_param(
     model_name: str,
     block: str,
@@ -375,7 +375,7 @@ async def delete_uploaded_model(
     else:
         return {f"Matlab model {model_name} was deleted successfully"}
 
-@router.get("/websocket", include_in_schema=False)
+@router.get("/websocket/site", include_in_schema=False)
 async def get(
     request: Request
 ):
