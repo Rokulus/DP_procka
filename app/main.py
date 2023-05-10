@@ -39,7 +39,7 @@ tags_metadata = [
     },
         {
         "name": "Logs",
-        "description": "Get access and error logs. Only super users can access these endpoints.",
+        "description": "Get error logs. Only super users can access this endpoint.",
     },
 ]
 
