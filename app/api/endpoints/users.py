@@ -144,6 +144,8 @@ async def delete_specific_user(
 
     result = await session.execute(select(User).where(User.email == user_email))
     user = result.scalars().first()
+    if user is None:
+        raise HTTPException(status_code=400, detail="User does not exist")
     delete_user_id = user.id
 
     await session.execute(delete(User).where(User.email == user_email))
