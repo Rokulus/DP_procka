@@ -124,8 +124,13 @@ async def make_super_user(
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
+    result = await session.execute(select(User).where(User.email == user_email))
+    if result.scalars().first() is not None:
+        raise HTTPException(status_code=400, detail="User does not exist")
+
     await session.execute(update(User).where(User.email == user_email).values(is_superuser=True))
     await session.commit()
+    return {f"User {user_email} was made to super user."}
 
 @router.delete("/{user_email}")
 async def delete_specific_user(
