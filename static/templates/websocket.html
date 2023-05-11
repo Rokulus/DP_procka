@@ -21,7 +21,10 @@
                 </p>
                 <label>Name of your model: <input type="text" id="modelName" class="form-control" autocomplete="off"/></label>
                 <br><br>
-                <p>You must choose block that is a RuntimeObject (for example Gain, Sine Wave,...).</p>
+                <p>You must choose block that is a RuntimeObject (for example Gain, Sine Wave,...).
+                    Virtual blocks (see <a href="https://www.mathworks.com/help/simulink/ug/nonvirtual-and-virtual-blocks.html">Nonvirtual and Virtual Blocks</a>) do not have run-time objects.
+                    Blocks eliminated during model compilation as an optimization also do not have run-time objects (see  <a href="https://www.mathworks.com/help/simulink/gui/block-reduction.html">Block reduction</a>).
+                </p>
                 <p>Desired blocks should be in format: Sine Wave,Gain,Gain1. There must not be any whitespaces between your desired blocks.
                     But write name of the blocks exactly as they are in model even with whitespace, like Sine Wave (You can get names of
                     blocks via /matlab/model-list-blocks endpoint). Otherwise you will be Disconnected.

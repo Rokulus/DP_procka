@@ -57,6 +57,9 @@
 								<button class="btn btn btn-success" type="submit" id="request_btn2" disabled>Upload</button>
 							</div>
 						</form>
+
+						<br>
+						<button type="button" id="logout" class="btn btn-danger">Logout</button>
 					</div>
 					</div>
 				</div>
@@ -155,7 +158,7 @@
     })
 
 	function loadInfo(fileName){
-		dataFromXml = parseModelDescription("/static/assets/models_xml/"+ fileName,false);
+		dataFromXml = parseModelDescription("/static/assets/models_xml/{{userId|safe}}/"+ fileName,false);
 
 		var htmlVars = "";
         var htmlParams = "";
@@ -249,10 +252,14 @@
 			$(this).addClass("active");
 			fileNameXML = $(this).attr('data-value');
 
-			loadInfo(fileNameXML);
+			if(fileNameXML != null){
+				loadInfo(fileNameXML);
+			}
 		});
 
-        loadInfo(fileNameXML);
+		if(fileNameXML != null){
+			loadInfo(fileNameXML);
+		}
 
 
 		$('#request_fmu').on("change",function(){
@@ -340,8 +347,15 @@
 
 		$('#download_model').on("click", function(){
 			model_name = fileNameXML.substr(0, fileNameXML.length - 4);
-			location.href = '/fmuJS/download-model/' + model_name;
+			location.href = '/fmuJS/download-model-site/' + model_name;
 		})
+
+		$('#logout').on("click", function(){
+			console.log(document.cookie);
+			document.cookie = "UserId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+			document.cookie = "Authorization=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+			location.href = '/auth/login'
+    	})
 
 	});
 

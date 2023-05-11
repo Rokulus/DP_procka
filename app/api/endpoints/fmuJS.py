@@ -3,12 +3,12 @@ import json
 import shutil
 import time
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Query, File, UploadFile, WebSocket, WebSocketDisconnect, WebSocketException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Query, File, UploadFile, WebSocket, WebSocketDisconnect, WebSocketException, status, Cookie
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 
-from typing import Union, List
+from typing import Union, List, Optional
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,19 +25,29 @@ router = APIRouter()
 
 templates = Jinja2Templates(directory="static/templates")
 
+# Site endpoints
+
 @router.get("/model-info", include_in_schema=False)
 async def show_model_info(
     request: Request,
 ):
-    path = "static/assets/models_xml"
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if cookie_authorization == None:
+        return RedirectResponse("http://127.0.0.1:8000/auth/login")
+    result = await deps.check_access_token(token=cookie_authorization)
+
+    cookie_userId: str = request.cookies.get("UserId")
+
+    path = "static/assets/models_xml/" + cookie_userId
     files = os.listdir(path)
     return templates.TemplateResponse("info.html", {
         "request": request,
-        "files": json.dumps(files)
+        "files": json.dumps(files),
+        "userId": cookie_userId
     })
 
 @router.get("/model/{model_name}", include_in_schema=False)
-def show_model(
+async def show_model(
     request: Request,
     model_name: str,
     modelMode: Union[str, None] = "continuous",
@@ -46,13 +56,21 @@ def show_model(
     stepSize: float = 0.1,
     interval: float = 30
 ):
-    if(os.path.isdir(f"static/assets/models/{model_name}") == False):
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if cookie_authorization == None:
+        return RedirectResponse("http://127.0.0.1:8000/auth/login")
+    result = await deps.check_access_token(token=cookie_authorization)
+
+    cookie_userId: str = request.cookies.get("UserId")
+
+    if(os.path.isdir(f"static/assets/models/{cookie_userId}/{model_name}") == False):
         raise HTTPException(status_code=400, detail="Model does not exist")
-    f = open(f'static/assets/models/{model_name}/{model_name}.js', 'r')
+    f = open(f'static/assets/models/{cookie_userId}/{model_name}/{model_name}.js', 'r')
     content = f.read()
     f.close()
     return templates.TemplateResponse("model.html", {
         "request": request,
+        "userId": cookie_userId,
         "model_name": model_name,
         "modelMode": modelMode,
         "stopTime": stopTime,
@@ -62,15 +80,43 @@ def show_model(
         "contentOfJS": content
     })
 
-@router.get("/download-model/{model_name}")
-async def download_model(model_name: str):
-    if (os.path.isfile(f"static/assets/models/{model_name}/{model_name}.js") == False):
+@router.get("/download-model-site/{model_name}", include_in_schema=False)
+async def download_model_site(
+    request: Request,
+    model_name: str
+):
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if cookie_authorization == None:
+        return RedirectResponse("http://127.0.0.1:8000/auth/login")
+    result = await deps.check_access_token(token=cookie_authorization)
+
+    cookie_userId: str = request.cookies.get("UserId")
+
+    if (os.path.isfile(f"static/assets/models/{cookie_userId}/{model_name}/{model_name}.js") == False):
         return {"Model does not exist"}
-    if (os.path.isfile(f"static/assets/models/{model_name}.zip") == True):
-        file_path = f"static/assets/models/{model_name}.zip"
+    if (os.path.isfile(f"static/assets/models/{cookie_userId}/{model_name}.zip") == True):
+        file_path = f"static/assets/models/{cookie_userId}/{model_name}.zip"
     else:
-        shutil.make_archive(f'static/assets/models/{model_name}', 'zip', 'static/assets/models', f'{model_name}')
-        file_path = f"static/assets/models/{model_name}.zip"
+        shutil.make_archive(f'static/assets/models/{cookie_userId}/{model_name}', 'zip', 'static/assets/models', f'{model_name}')
+        file_path = f"static/assets/models/{cookie_userId}/{model_name}.zip"
+
+    return FileResponse(path=file_path, filename=model_name + ".zip", media_type="multipart/form-data")
+
+
+# Only Endpoints
+
+@router.get("/download-model/{model_name}")
+async def download_model(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user)
+):
+    if (os.path.isfile(f"static/assets/models/{current_user.id}/{model_name}/{model_name}.js") == False):
+        return {"Model does not exist"}
+    if (os.path.isfile(f"static/assets/models/{current_user.id}/{model_name}.zip") == True):
+        file_path = f"static/assets/models/{current_user.id}/{model_name}.zip"
+    else:
+        shutil.make_archive(f'static/assets/models/{current_user.id}/{model_name}', 'zip', 'static/assets/models', f'{model_name}')
+        file_path = f"static/assets/models/{current_user.id}/{model_name}.zip"
 
     return FileResponse(path=file_path, filename=model_name + ".zip", media_type="multipart/form-data")
 

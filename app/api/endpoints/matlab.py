@@ -9,7 +9,7 @@ import time
 from fastapi import APIRouter, Depends, HTTPException, Request, Query, File, UploadFile, WebSocket, WebSocketDisconnect, WebSocketException, status
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from typing import Union, List, Annotated
 
@@ -370,8 +370,31 @@ async def delete_uploaded_model(
     else:
         return {f"Matlab model {model_name} was deleted successfully"}
 
+@router.get("/download-model/{model_name}")
+async def download_matlab_model(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Download Matlab model, please provide name of the model with .slx or .mdl"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    file_location = f"{PROJECT_DIR}/uploaded_matlab_files/{current_user.id}/{model_name}"
+
+    return FileResponse(path=file_location, filename=model_name, media_type="multipart/form-data")
+
 @router.get("/websocket", include_in_schema=False)
-async def get(request: Request):
+async def get(
+    request: Request
+):
+
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if cookie_authorization == None:
+        return RedirectResponse("http://127.0.0.1:8000/auth/login")
+    result = await deps.check_access_token(token=cookie_authorization)
+
     return templates.TemplateResponse("websocket.html", {
         "request": request,
     })
@@ -386,7 +409,8 @@ async def websocket_endpoint(
 
     free_instance = await get_free_matlab_instance(session=session)
     result = await session.execute(select(User).where(User.email == email))
-    if result.scalars().first() is None or free_instance is None:
+    user = result.scalars().first()
+    if user is None or free_instance is None:
         await websocket.send_text("Refresh site and use your email adress")
         raise WebSocketException(
             code=status.HTTP_404_NOT_FOUND,
@@ -405,7 +429,7 @@ async def websocket_endpoint(
         blocks = blocks.split(",")
 
         PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-        if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{modelName}") == False):
+        if (os.path.isfile(f"{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}") == False):
             raise WebSocketException(status_code=400, detail="Matlab model does not exist")
 
         #eng.open_system(f'{PROJECT_DIR}\\uploaded_matlab_files\\{modelName}', nargout=0) # -> with GUI

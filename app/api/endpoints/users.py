@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,8 +10,9 @@ from app.models import User
 from app.schemas.requests import UserCreateRequest, UserUpdatePasswordRequest, UserChangeEmailRequest
 from app.schemas.responses import UserResponse
 
-router = APIRouter()
+from pathlib import Path
 
+router = APIRouter()
 
 @router.get("/me", response_model=UserResponse)
 async def read_current_user(
@@ -72,6 +75,21 @@ async def register_new_user(
     )
     session.add(user)
     await session.commit()
+
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+    name_of_user_directory = user.id
+    path = f"{PROJECT_DIR}/uploaded_fmu_files/{name_of_user_directory}"
+    os.mkdir(path)
+
+    path = f"{PROJECT_DIR}/uploaded_matlab_files/{name_of_user_directory}"
+    os.mkdir(path)
+
+    path = f"{PROJECT_DIR}/static/assets/models/{name_of_user_directory}"
+    os.mkdir(path)
+
+    path = f"{PROJECT_DIR}/static/assets/models_xml/{name_of_user_directory}"
+    os.mkdir(path)
+
     return user
 
 @router.get("/all-users", response_model=list[UserResponse])
