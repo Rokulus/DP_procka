@@ -37,21 +37,6 @@ async def upload_fmu_model(
         file_object.write(uploaded_model.file.read())
     return {"FMU model was successfully uploaded ": uploaded_model.filename}
 
-@router.get("/{model_name}")
-async def download_fmu_model(
-    model_name: str,
-    current_user: User = Depends(deps.get_current_user),
-):
-    """Download FMU model, please state name of desired model without .fmu"""
-    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
-
-    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu") == False):
-        raise HTTPException(status_code=400, detail="Model does not exist")
-
-    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu"
-
-    return FileResponse(path=file_location, filename=model_name + ".fmu", media_type="multipart/form-data")
-
 @router.get("/get-uploaded-models")
 async def get_uploaded_models(
     current_user: User = Depends(deps.get_current_user),
@@ -66,6 +51,20 @@ async def get_uploaded_models(
         files_arr.append(f)
     return files_arr
 
+@router.get("/{model_name}")
+async def download_fmu_model(
+    model_name: str,
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Download FMU model, please state name of desired model without .fmu"""
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    if(os.path.isfile(f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu") == False):
+        raise HTTPException(status_code=400, detail="Model does not exist")
+
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{model_name}.fmu"
+
+    return FileResponse(path=file_location, filename=model_name + ".fmu", media_type="multipart/form-data")
 
 @router.get("/model-info/{model_name}")
 async def fmu_model_info(
