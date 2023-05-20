@@ -396,21 +396,21 @@ async def websocket_endpoint(
 ):
     await websocket.accept()
 
-    free_instance = await get_free_matlab_instance(session=session)
-    result = await session.execute(select(User).where(User.email == email))
-    user = result.scalars().first()
-    if user is None or free_instance is None:
-        raise WebSocketException(
-            code=status.HTTP_404_NOT_FOUND,
-            reason="Bad email adress or none of the free_instane is free.",
-        )
-    free_instance.user_email = email
-    issued_at = int(time.time()) + 5 * 60 # -> 5 minutes from now
-    free_instance.expires_at = issued_at
-    await session.commit()
-    eng = matlab.engine.connect_matlab(free_instance.matlab_instance)
-
     try:
+        free_instance = await get_free_matlab_instance(session=session)
+        result = await session.execute(select(User).where(User.email == email))
+        user = result.scalars().first()
+        if user is None or free_instance is None:
+            raise WebSocketException(
+                code=status.HTTP_404_NOT_FOUND,
+                reason="Bad email adress or none of the free_instane is free.",
+            )
+        free_instance.user_email = email
+        issued_at = int(time.time()) + 5 * 60 # -> 5 minutes from now
+        free_instance.expires_at = issued_at
+        await session.commit()
+        eng = matlab.engine.connect_matlab(free_instance.matlab_instance)
+
         modelName = await websocket.receive_text()
         blocks = await websocket.receive_text()
 
@@ -433,8 +433,20 @@ async def websocket_endpoint(
                 real_time_data = eng.workspace['real_time_data']
                 await push_data(websocket, block ,real_time_data)
     except WebSocketException as e:
+        if PROJECT_DIR:
+            eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
+            eng.quit()
+        free_instance.user_email = None
+        free_instance.expires_at = None
+        await session.commit()
         return {'Exception websocket ERROR: ':  e}
     except matlab.engine.MatlabExecutionError as e:
+        if PROJECT_DIR:
+            eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
+            eng.quit()
+        free_instance.user_email = None
+        free_instance.expires_at = None
+        await session.commit()
         return {e.args[0]}
     except WebSocketDisconnect:
         if PROJECT_DIR:
@@ -444,8 +456,9 @@ async def websocket_endpoint(
         free_instance.expires_at = None
         await session.commit()
     finally:
-        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
-        eng.quit()
+        if PROJECT_DIR:
+            eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
+            eng.quit()
         free_instance.user_email = None
         free_instance.expires_at = None
         await session.commit()
