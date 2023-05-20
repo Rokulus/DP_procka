@@ -397,6 +397,7 @@ async def websocket_endpoint(
 
     try:
         await websocket.accept()
+        state = "accepted"
 
         free_instance = await get_free_matlab_instance(session=session)
         result = await session.execute(select(User).where(User.email == email))
@@ -423,6 +424,8 @@ async def websocket_endpoint(
 
         #eng.open_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0) # -> with GUI
         eng.load_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0) # -> without GUI
+        state = "matlab_accepted"
+
         name = modelName[:-4]
         #eng.set_param(f'{name}', 'EnablePacing', 'on', nargout=0) # -> slow simulation for testing
         eng.set_param(f'{name}','SimulationCommand', 'start', nargout=0)
@@ -434,7 +437,7 @@ async def websocket_endpoint(
                 real_time_data = eng.workspace['real_time_data']
                 await push_data(websocket, block ,real_time_data)
     except WebSocketException as e:
-        if PROJECT_DIR:
+        if state == "matlab_accepted":
             eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
             eng.quit()
         free_instance.user_email = None
@@ -442,7 +445,7 @@ async def websocket_endpoint(
         await session.commit()
         return {'Exception websocket ERROR: ':  e}
     except matlab.engine.MatlabExecutionError as e:
-        if PROJECT_DIR:
+        if state == "matlab_accepted":
             eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
             eng.quit()
         free_instance.user_email = None
@@ -450,14 +453,14 @@ async def websocket_endpoint(
         await session.commit()
         return {e.args[0]}
     except WebSocketDisconnect:
-        if PROJECT_DIR:
+        if state == "matlab_accepted":
             eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
             eng.quit()
         free_instance.user_email = None
         free_instance.expires_at = None
         await session.commit()
     finally:
-        if PROJECT_DIR:
+        if state == "matlab_accepted":
             eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
             eng.quit()
         free_instance.user_email = None
