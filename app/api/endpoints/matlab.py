@@ -394,9 +394,10 @@ async def websocket_endpoint(
     email: str,
     session: AsyncSession = Depends(deps.get_session),
 ):
-    await websocket.accept()
 
     try:
+        await websocket.accept()
+
         free_instance = await get_free_matlab_instance(session=session)
         result = await session.execute(select(User).where(User.email == email))
         user = result.scalars().first()
