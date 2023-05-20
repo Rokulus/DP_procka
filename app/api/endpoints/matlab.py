@@ -437,8 +437,9 @@ async def websocket_endpoint(
     except matlab.engine.MatlabExecutionError as e:
         return {e.args[0]}
     except WebSocketDisconnect:
-        eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
-        eng.quit()
+        if PROJECT_DIR:
+            eng.close_system(f'{PROJECT_DIR}/uploaded_matlab_files/{user.id}/{modelName}', nargout=0)
+            eng.quit()
         free_instance.user_email = None
         free_instance.expires_at = None
         await session.commit()
