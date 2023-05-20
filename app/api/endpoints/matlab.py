@@ -427,6 +427,12 @@ async def websocket_endpoint(
         state = "matlab_accepted"
 
         name = modelName[:-4]
+        eng.eval(f'bl = getfullname(Simulink.findBlocks("{name}"))', nargout=0)
+        bl = eng.workspace['bl']
+        for block in blocks:
+            if f"{name}/{block}" not in bl:
+                raise WebSocketException(status_code=400, detail="Incorrect blocks")
+
         #eng.set_param(f'{name}', 'EnablePacing', 'on', nargout=0) # -> slow simulation for testing
         eng.set_param(f'{name}','SimulationCommand', 'start', nargout=0)
         while float(eng.get_param(f'{name}','SimulationTime')) <= float(eng.get_param(f'{name}','StopTime')) and eng.get_param(f'{name}', 'SimulationStatus') != 'stopped':
