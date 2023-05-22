@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api import deps
 from app.core.security import get_password_hash
 from app.models import User
-from app.schemas.requests import RunFMUModelRequest
+from app.schemas.requests import RunFMUModelRequest, RunFMUModelWithUploadFileRequest
 from app.schemas.responses import UserResponse
 
 from fmpy import *
@@ -177,7 +177,53 @@ async def delete_uploaded_model(
     else:
         return {f"FMU model {model_name} was deleted successfully"}
 
+@router.post("/model-run-file")
+async def fmu_model_run_post_file(
+    model: RunFMUModelWithUploadFileRequest = Depends(),
+    uploaded_fmu: UploadFile = File(...),
+    current_user: User = Depends(deps.get_current_user),
+):
+    """Upload and also run uploaded FMU model. Output values must be in format: h,e,v. Start values must be in format: h=2,v=1"""
+    file_extension = uploaded_fmu.filename[-4:]
+    if file_extension not in [".fmu"]:
+        raise HTTPException(status_code=400, detail="Invalid file type, please upload files with .fmu")
 
+    PROJECT_DIR = Path(__file__).parent.parent.parent.parent
+
+    file_location = f"{PROJECT_DIR}/uploaded_fmu_files/{current_user.id}/{uploaded_fmu.filename}.fmu"
+
+    with open(file_location, "wb+") as file_object:
+        file_object.write(uploaded_fmu.file.read())
+
+    outputValues = None
+    if model.outputValues != None:
+        outputValues = model.outputValues.split(",")
+        for i, value in enumerate(outputValues): #if somebody writes values with whitespace after ","
+            outputValues[i] = ''.join(value.split())
+
+    startValues_dict = {}
+    if model.startValues != None:
+        startValues = model.startValues.split(",")
+        for i, value in enumerate(startValues): #if somebody writes values with whitespace
+            startValues[i] = ''.join(value.split())
+            values = startValues[i].split("=")
+            startValues_dict.update({values[0]: values[1]})
+
+    try:
+        result = simulate_fmu(file_location, output=outputValues, start_values=startValues_dict , start_time=model.startTime, stop_time=model.stopTime, step_size=model.stepSize, solver=model.solver, relative_tolerance=model.relative_tolerance)
+    except Exception as e:
+        return {"Error from simulate_fmu:": e}
+    fmu_result = np.array(result) # je to treba zmenit z numpy na str aby sa to dalo poslat
+    keys = fmu_result.dtype.names
+
+    final_result = []
+    for value in fmu_result:
+        temp_dict = {}
+        for i, key in enumerate(keys):
+            temp_dict.update({key: value[i]})
+        final_result.append(temp_dict)
+
+    return final_result
 
 
 

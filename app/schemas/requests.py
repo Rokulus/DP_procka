@@ -32,4 +32,14 @@ class RunFMUModelRequest(BaseRequest):
     outputInterval: float = None
     outputValues: str = ""
 
+class RunFMUModelWithUploadFileRequest(BaseRequest):
+    startTime: float = None
+    stopTime: float = 5
+    stepSize: float = None
+    solver: str = "CVode"
+    relative_tolerance: float = None
+    startValues: str = None
+    outputInterval: float = None
+    outputValues: str = None
+
 
